@@ -36,7 +36,8 @@ if __name__ == '__main__':
 
     opt.arch = '{}'.format(opt.model)
     opt.store_name = '_'.join([opt.dataset, opt.model, str(opt.sample_duration)])
-
+    #HO AGGIUNTO QUESTO PER NON FAR ESEGUIRE IL TEST
+    #opt.test = False
     for fold in range(n_folds):
         # if opt.dataset == 'RAVDESS':
         #    opt.annotation_path = '/lustre/scratch/chumache/ravdess-develop/annotations_croppad_fold'+str(fold+1)+'.txt'
@@ -144,6 +145,8 @@ if __name__ == '__main__':
                 save_checkpoint(state, is_best, opt, fold)
 
         if opt.test:
+            # lo faccio uscire subito perché non mi interessa questa parte
+            break
             test_logger = Logger(
                 os.path.join(opt.result_path, 'test' + str(fold) + '.log'), ['epoch', 'loss', 'prec1', 'prec5'])
 
@@ -157,7 +160,8 @@ if __name__ == '__main__':
             best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name) + str(fold) + '.pth', map_location=torch.device('cpu'))
             #model.load_state_dict(best_state['state_dict'],strict=False)
             model.load_state_dict(best_state['state_dict'])
-
+            print("----------------------------------------- ", str(fold))
+            # Usa il data loader perché suddivide i dati in mini-batch per ottimizzare la memoria e la velocità del test.
             test_loader = torch.utils.data.DataLoader(
                 test_data,
                 batch_size=opt.batch_size,
@@ -165,15 +169,29 @@ if __name__ == '__main__':
                 #num_workers=opt.n_threads,
                 num_workers=14,
                 pin_memory=True)
-
-            test_loss, test_prec1 = val_epoch(10000, test_loader, model, criterion, opt,
+            print("Inizio")
+            test_loss, test_prec1 = val_epoch(1, test_loader, model, criterion, opt,
                                               test_logger)
-
+            print("Fine")
             with open(os.path.join(opt.result_path, 'test_set_bestval' + str(fold) + '.txt'), 'a') as f:
                 f.write('Prec1: ' + str(test_prec1) + '; Loss: ' + str(test_loss))
             test_accuracies.append(test_prec1)
 
-    with open(os.path.join(opt.result_path, 'test_set_bestval.txt'), 'a') as f:
+    '''with open(os.path.join(opt.result_path, 'test_set_bestval.txt'), 'a') as f:
         f.write(
             'Prec1: ' + str(np.mean(np.array(test_accuracies))) + '+' + str(np.std(np.array(test_accuracies))) + '\n')
+    '''
+    # MIE MODIFICHE-------------------
+    import libreria_tmp as tmp
+    model, _ = generate_model(opt)
+    # da vedere torch.load che fa 
+    best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name) + str(0) + '.pth', map_location=torch.device('cpu'))
+    #model.load_state_dict(best_state['state_dict'],strict=False)
+    model.load_state_dict(best_state['state_dict'])
+    print("Tutto ok")
+    # Esegui la predizione su un video specifico
+    video_path = '/Users/renatoesposito/Desktop/cognitive-robotics-project/test/RAVDESS/ACTOR05/01-01-02-01-01-01-05.mp4'
+    print("Passo alla funzione")
+    predictions = tmp.predict_single_video(video_path, model,input_size=(224,224), device='cpu')
+    print(predictions)
 
