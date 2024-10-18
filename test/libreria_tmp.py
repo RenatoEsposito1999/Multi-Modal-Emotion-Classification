@@ -29,13 +29,14 @@ def preprocess_frame(frame, input_size=(224, 224)):
     transform = transforms.Compose([
         transforms.ToTensor(),  # Converte in tensor [C, H, W]
     ])
-    return transform(frame).unsqueeze(0)  # Aggiunge dimensione per il batch
+    
+    return transform(frame)  # Aggiunge dimensione per il batch
 
-def predict_single_video(video_path, model, input_size=(224, 224), device='cpu'):
+def predict_single_video(video_path, model, input_size=(224, 224), device='cpu', frames_per_sample=15):
     model.eval()
     model.to(device)
     
-    # Estrarre l'audio direttamente dal video
+    # Estrarre l'audio dal video
     video_clip = AudioFileClip(video_path)
     audio_path = "temp_audio.wav"
     video_clip.write_audiofile(audio_path, codec='pcm_s16le')
@@ -45,21 +46,54 @@ def predict_single_video(video_path, model, input_size=(224, 224), device='cpu')
     cap = cv2.VideoCapture(video_path)
     
     predictions = []
+    frame_buffer = []
 
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
         
-        # Preprocessamento del frame
         visual_input = preprocess_frame(frame, input_size).to(device)
-        visual_input = visual_input.unsqueeze(0)  # Aggiungi dimensione batch
-        # Passa l'audio e il video al modello
-        with torch.no_grad():
-            output = model(x_visual=visual_input, x_audio=audio_input)
+        frame_buffer.append(visual_input)
 
-        predictions.append(output.cpu().numpy())  # Memorizza i risultati
+        if len(frame_buffer) == frames_per_sample:
+            visual_input_batch = torch.stack(frame_buffer).to(device)
+            frame_buffer = []
+
+            with torch.no_grad():
+                logits = model(x_visual=visual_input_batch, x_audio=audio_input)
+                
+                # Stampa i logits per ispezionarli
+                print("Logits:", logits)
+                
+                # Applica softmax e stampa le probabilità
+                probabilities = torch.nn.functional.softmax(logits, dim=-1)
+                print("Probabilità:", probabilities)
+                
+                predictions.append(probabilities.cpu().numpy())
+
+    if 0 < len(frame_buffer) < frames_per_sample:
+        last_frame = frame_buffer[-1]
+        while len(frame_buffer) < frames_per_sample:
+            frame_buffer.append(last_frame)
+
+        visual_input_batch = torch.stack(frame_buffer).to(device)
         
+        with torch.no_grad():
+            logits = model(x_visual=visual_input_batch, x_audio=audio_input)
+            # Ottieni i logits dal modello
+
+            # Calcola le probabilità (opzionale, se vuoi vedere anche le probabilità)
+            probabilities = torch.nn.functional.softmax(logits, dim=-1)
+
+            # Trova l'indice della classe con la probabilità più alta
+            predicted_class = torch.argmax(logits, dim=-1)
+
+            # Stampa i risultati
+            #print(f"Logits: {logits}")
+            #print(f"Probabilità: {probabilities}")
+            print(f"Classe predetta: {predicted_class.item()}")  # .item() se è un singolo valore
+
     cap.release()
     
     return np.array(predictions)

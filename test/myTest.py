@@ -193,5 +193,6 @@ if __name__ == '__main__':
     video_path = '/Users/renatoesposito/Desktop/cognitive-robotics-project/test/RAVDESS/ACTOR05/01-01-02-01-01-01-05.mp4'
     print("Passo alla funzione")
     predictions = tmp.predict_single_video(video_path, model,input_size=(224,224), device='cpu')
-    print(predictions)
+    #print(predictions)
+
 
