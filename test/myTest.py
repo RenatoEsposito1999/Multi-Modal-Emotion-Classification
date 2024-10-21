@@ -190,9 +190,10 @@ if __name__ == '__main__':
     model.load_state_dict(best_state['state_dict'])
     print("Tutto ok")
     # Esegui la predizione su un video specifico
-    video_path = '/Users/renatoesposito/Desktop/cognitive-robotics-project/test/RAVDESS/ACTOR05/01-01-02-01-01-01-05.mp4'
+    video_path = '/Users/renatoesposito/Desktop/cognitive-robotics-project/test/RAVDESS/ACTOR05/02-01-05-02-01-02-05_facecroppad.npy'
+    audio_path = '/Users/renatoesposito/Desktop/cognitive-robotics-project/test/RAVDESS/ACTOR05/03-01-05-02-01-02-05_croppad.wav'
     print("Passo alla funzione")
-    predictions = tmp.predict_single_video(video_path, model,input_size=(224,224), device='cpu')
+    predictions = tmp.predict_single_video(video_path, audio_path,model,input_size=(224,224), device='cpu',video_norm_value=opt.video_norm_value)
     #print(predictions)
 
 

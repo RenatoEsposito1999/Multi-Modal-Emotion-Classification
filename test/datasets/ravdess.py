@@ -89,7 +89,6 @@ class RAVDESS(data.Dataset):
                  
             mfcc = get_mfccs(y, sr)            
             audio_features = mfcc 
-
             if self.data_type == 'audio':
                 return audio_features, target
         if self.data_type == 'audiovisual':

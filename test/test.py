@@ -25,7 +25,10 @@ opt = parse_opts()
 video_transform = transforms.Compose([
                 transforms.ToTensor(opt.video_norm_value)])
 test_data = get_test_set(opt, spatial_transform=video_transform)
-print(test_data.data[0]["video_path"])
+for video in test_data.data:
+    if("01-01-05-02-02-02-05" in video["video_path"]):
+        print(video)
+#print(test_data.data[0]["video_path"])
 # TEST DATA:  RAVDESS Dataset - Subset: , Size: 480, 
 # Spatial Transform: <transforms.Compose object at 0x11fdd9490>, 
 # Audio Transform: None, Data Type: audiovisual
