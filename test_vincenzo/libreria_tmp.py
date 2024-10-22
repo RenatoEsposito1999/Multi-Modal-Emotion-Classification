@@ -39,7 +39,8 @@ def load_audio(audiofile, sr=22050):
     return y, sr
 
 def video_loader(video_dir_path):
-    video = np.load(video_dir_path)    
+    #video = np.load(video_dir_path)
+    video = video_dir_path   
     video_data = []
     for i in range(np.shape(video)[0]):
         video_data.append(Image.fromarray(video[i,:,:,:]))    
@@ -70,11 +71,11 @@ def preprocess_frame(frame, input_size=(224, 224), video_norm_value=None):
     
     return video_transform(frame)
 
-def predict_single_video(video_path, audio_path, model, input_size=(224, 224), device='cpu', frames_per_sample=15, video_norm_value=None, batch_size=1):
+def predict_single_video(video_npy, audio_path, model, input_size=(224, 224), device='cpu', frames_per_sample=15, video_norm_value=None, batch_size=1):
     model.eval()
     model.to(device)
     loader = get_default_video_loader()
-    visual_input_batch = loader(video_path)
+    visual_input_batch = loader(video_npy)
     #VIDEO
     video_transform = transforms.Compose([
                 transforms.RandomHorizontalFlip(),
@@ -105,7 +106,7 @@ def predict_single_video(video_path, audio_path, model, input_size=(224, 224), d
     video_var = video_var.reshape(video_var.shape[0]*video_var.shape[1], video_var.shape[2], video_var.shape[3], video_var.shape[4])
     print(f"Dimensioni dell'audio preprocessato: {audio_var.shape}")
     print(f"Dimensioni del video preprocessato: {video_var.shape}")
-    logits = model(audio_var,video_var)
+    logits = model(x_audio=audio_var, x_visual=video_var)
     probabilities = torch.softmax(logits, dim=1)
     predicted_classes = torch.argmax(probabilities, dim=1)
     print(predicted_classes)
