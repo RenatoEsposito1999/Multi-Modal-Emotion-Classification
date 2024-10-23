@@ -128,14 +128,18 @@ class AudioCNNPool(nn.Module):
         super(AudioCNNPool, self).__init__()
 
         input_channels = 10
-        '''self.conv1d_0 = conv1d_block_audio(input_channels, 64*2)
+        '''
+        self.conv1d_0 = conv1d_block_audio(input_channels, 64*2)
         self.conv1d_1 = conv1d_block_audio(64*2, 128*2)
         self.conv1d_2 = conv1d_block_audio(128*2, 256*2)
-        self.conv1d_3 = conv1d_block_audio(256*2, 128*2)'''
+        self.conv1d_3 = conv1d_block_audio(256*2, 128*2)
+        '''
         self.conv1d_0 = conv1d_block_audio(input_channels, 64)
         self.conv1d_1 = conv1d_block_audio(64, 128)
         self.conv1d_2 = conv1d_block_audio(128, 256)
         self.conv1d_3 = conv1d_block_audio(256, 128)
+        
+        
         
         self.classifier_1 = nn.Sequential(
                 nn.Linear(128, num_classes),

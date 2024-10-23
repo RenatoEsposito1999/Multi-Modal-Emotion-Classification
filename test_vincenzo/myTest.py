@@ -191,12 +191,13 @@ if __name__ == '__main__':
     model.load_state_dict(best_state['state_dict'])
     print("Tutto ok")
     # Esegui la predizione su un video specifico
-    video_path = 'C:/Users/Vince/Desktop/cognitive-robotics-project/test_vincenzo/ravdess_preprocessing/RAVDESS/ACTOR05/01-01-07-01-02-01-05_facecroppad.npy'
-    audio_path = 'C:/Users/Vince/Desktop/cognitive-robotics-project/test_vincenzo/prova_croppad.wav'
-    video = Video_preprocessing("C:/Users/Vince/Desktop/cognitive-robotics-project/test_vincenzo/prova_3.mp4")
-    video_npy = video.process() 
+    video_path = 'C:/Users/Vince/Desktop/cognitive-robotics-project/test_vincenzo/ravdess_preprocessing/RAVDESS/ACTOR05/01-01-03-02-01-02-05_facecroppad.npy'
+    #audio_path = 'C:/Users/Vince/Desktop/cognitive-robotics-project/test_vincenzo/prova_croppad.wav'
+    audio_path = "C:/Users/Vince/Desktop/cognitive-robotics-project/test_vincenzo/ravdess_preprocessing/RAVDESS/ACTOR05/03-01-03-02-01-02-05_croppad.wav"
+    #video = Video_preprocessing("C:/Users/Vince/Desktop/cognitive-robotics-project/test_vincenzo/prova_3_io.mp4")
+    #video_npy = video.process() 
     print("Passo alla funzione")
-    predictions = tmp.predict_single_video(video_npy, audio_path,model,input_size=(224,224), device='cpu',video_norm_value=opt.video_norm_value, batch_size=opt.batch_size)
+    predictions = tmp.predict_single_video(video_path, audio_path,model,input_size=(224,224), device='cpu',video_norm_value=opt.video_norm_value, batch_size=opt.batch_size)
     #print(predictions)
 
 

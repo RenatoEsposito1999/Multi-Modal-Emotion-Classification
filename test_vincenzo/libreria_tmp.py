@@ -39,8 +39,8 @@ def load_audio(audiofile, sr=22050):
     return y, sr
 
 def video_loader(video_dir_path):
-    #video = np.load(video_dir_path)
-    video = video_dir_path   
+    video = np.load(video_dir_path)
+    #video = video_dir_path   
     video_data = []
     for i in range(np.shape(video)[0]):
         video_data.append(Image.fromarray(video[i,:,:,:]))    
