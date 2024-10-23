@@ -64,7 +64,8 @@ if __name__ == '__main__':
                 batch_size=opt.batch_size,
                 shuffle=True,
                 #num_workers=opt.n_threads,
-                num_workers=14,
+                #num_workers=14,
+                num_workers=8,
                 pin_memory=True)
 
             train_logger = Logger(
@@ -163,7 +164,8 @@ if __name__ == '__main__':
                 batch_size=opt.batch_size,
                 shuffle=False,
                 #num_workers=opt.n_threads,
-                num_workers=14,
+                #num_workers=14,
+                num_workers=8,
                 pin_memory=True)
 
             test_loss, test_prec1 = val_epoch(10000, test_loader, model, criterion, opt,

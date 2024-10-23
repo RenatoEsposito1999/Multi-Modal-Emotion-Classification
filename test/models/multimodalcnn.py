@@ -49,6 +49,7 @@ class EfficientFaceTemporal(nn.Module):
         self.conv5 = nn.Sequential(nn.Conv2d(input_channels, output_channels, 1, 1, 0, bias=False),
                                    nn.BatchNorm2d(output_channels),
                                    nn.ReLU(inplace=True),)
+        '''
         self.conv1d_0 = conv1d_block(output_channels, 64*2)
         self.conv1d_1 = conv1d_block(64*2, 64*2)
         self.conv1d_2 = conv1d_block(64*2, 128*2)
@@ -58,7 +59,7 @@ class EfficientFaceTemporal(nn.Module):
         self.conv1d_1 = conv1d_block(64, 64)
         self.conv1d_2 = conv1d_block(64, 128)
         self.conv1d_3 = conv1d_block(128, 128)
-        '''
+        
 
         self.classifier_1 = nn.Sequential(
                 nn.Linear(128, num_classes),
@@ -130,10 +131,12 @@ class AudioCNNPool(nn.Module):
         super(AudioCNNPool, self).__init__()
 
         input_channels = 10
-        '''self.conv1d_0 = conv1d_block_audio(input_channels, 64*2)
+        '''
+        self.conv1d_0 = conv1d_block_audio(input_channels, 64*2)
         self.conv1d_1 = conv1d_block_audio(64*2, 128*2)
         self.conv1d_2 = conv1d_block_audio(128*2, 256*2)
-        self.conv1d_3 = conv1d_block_audio(256*2, 128*2)'''
+        self.conv1d_3 = conv1d_block_audio(256*2, 128*2)
+        '''
         self.conv1d_0 = conv1d_block_audio(input_channels, 64)
         self.conv1d_1 = conv1d_block_audio(64, 128)
         self.conv1d_2 = conv1d_block_audio(128, 256)

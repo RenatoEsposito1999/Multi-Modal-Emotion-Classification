@@ -6,7 +6,7 @@ import soundfile as sf
 import numpy as np
 
 # audiofile = 'E://OpenDR_datasets//RAVDESS//Actor_19//03-01-07-02-01-02-19.wav'
-audiofile = '/Users/renatoesposito/Desktop/cognitive-robotics-project/test/RAVDESS/03-01-08-02-02-02-05.wav'
+#audiofile = '/Users/renatoesposito/Desktop/cognitive-robotics-project/test/RAVDESS/03-01-08-02-02-02-05.wav'
 ##this file preprocess audio files to ensure they are of the same length. if length is less than 3.6 seconds, it is padded with zeros in the end. otherwise, it is equally cropped from 
 ##both sides
 
