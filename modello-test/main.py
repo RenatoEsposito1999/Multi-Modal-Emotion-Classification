@@ -10,7 +10,9 @@ import numpy as np
 import torch
 from torch import nn, optim
 from torch.optim import lr_scheduler
-
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
 from opts import parse_opts
 from model import generate_model
 import transforms
@@ -174,13 +176,25 @@ if __name__ == '__main__':
             
             #exit(-1)
             '''
-            test_loss, test_prec1 = val_epoch(10000, test_loader, model, criterion, opt,
-                                              test_logger)
-
+            #test_loss, test_prec1 = val_epoch(10000, test_loader, model, criterion, opt,test_logger)
+            
+            test_loss, test_prec1, all_preds, all_labels = val_epoch(10000, test_loader, model, criterion, opt, test_logger)
+ 
+            # Print and visualize the confusion matrix
+            cm = confusion_matrix(all_labels, all_preds)
+            print("Confusion Matrix:\n", cm)
+            plt.figure(figsize=(10, 8))
+            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+            plt.xlabel("Predicted Labels")
+            plt.ylabel("True Labels")
+            plt.title("Confusion Matrix")
+            plt.show()
+            # Save results
             with open(os.path.join(opt.result_path, 'test_set_bestval' + str(fold) + '.txt'), 'a') as f:
                 f.write('Prec1: ' + str(test_prec1) + '; Loss: ' + str(test_loss))
             test_accuracies.append(test_prec1)
 
+            
     with open(os.path.join(opt.result_path, 'test_set_bestval.txt'), 'a') as f:
         f.write(
             'Prec1: ' + str(np.mean(np.array(test_accuracies))) + '+' + str(np.std(np.array(test_accuracies))) + '\n')
