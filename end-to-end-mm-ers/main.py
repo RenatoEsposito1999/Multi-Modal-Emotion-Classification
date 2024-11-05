@@ -3,7 +3,7 @@ from extract import *
 import torch
 
 emotion_dict=['neutral','calm', 'happy', 'sad', 'angry', 'fearful', 'disgust', 'surprised']
-path = 'C:/Users/Vince/Desktop/End-to-End-Multimodal-emotion-recognition/raw_data/angry_wrong_1.mp4'
+path = '/Users/renatoesposito/Desktop/cognitive-robotics-project/end-to-end-mm-ers/raw_data/happy_correct_1.mp4'
 if __name__ == '__main__':
     # load the trained model
     model = get_model()

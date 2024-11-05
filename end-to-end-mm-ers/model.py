@@ -16,6 +16,9 @@ def generate_model(opt):
 def get_model():
     opt = parse_opts()
     model, parameters = generate_model(opt)
-    state = torch.load('models/RAVDESS_multimodalcnn_15_best0.pth')
+    #MacOS user
+    state = torch.load('models/ia_1head_moddrop_2.pth',map_location=torch.device('cpu'))
+    #Nvidia
+    #state = torch.load('models/RAVDESS_multimodalcnn_15_best0_04_11.pth')
     model.load_state_dict(state['state_dict'], strict=False)
     return model

@@ -34,9 +34,9 @@ class Video_preprocessing():
         framen = int(self.save_length*self.input_fps)    
         frames_to_select = select_distributed(self.save_frames,framen)
         save_fps = self.save_frames // (framen // self.input_fps) 
-        if save_avi:
+        '''if save_avi:
             out = cv2.VideoWriter("Prova.avi",cv2.VideoWriter_fourcc('M','J','P','G'), save_fps, (224,224))
-        
+        '''
         numpy_video = []
         frame_ctr = 0
             
@@ -65,16 +65,16 @@ class Video_preprocessing():
                 x1, y1, x2, y2 = bbox
             im = im[y1:y2, x1:x2, :]
             im = cv2.resize(im, (224,224))
-            if save_avi:
-                out.write(im)
+            '''if save_avi:
+                out.write(im)'''
             numpy_video.append(im)
         if len(frames_to_select) > 0:
             for i in range(len(frames_to_select)):
-                if save_avi:
-                    out.write(np.zeros((224,224,3), dtype = np.uint8))
+                '''if save_avi:
+                    out.write(np.zeros((224,224,3), dtype = np.uint8))'''
                 numpy_video.append(np.zeros((224,224,3), dtype=np.uint8))
-        if save_avi:
-            out.release() 
+        '''if save_avi:
+            out.release() '''
         return np.array(numpy_video)
         #if len(numpy_video) != 15:
             #print('Error')

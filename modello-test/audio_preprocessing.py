@@ -14,8 +14,10 @@ class Audio_preprocessing():
         audio = video.audio
         audio.write_audiofile("prova.wav")
         audios = librosa.core.load("./prova.wav", sr=22050)
-
+        os.remove("prova.wav")
         y = audios[0]
+        print(type(audios))
+        print(audios)
         sr = audios[1]
         target_length = int(sr * self.target_time)
         if len(y) < target_length:
@@ -24,5 +26,4 @@ class Audio_preprocessing():
             remain = len(y) - target_length
             y = y[remain // 2:-(remain - remain // 2)]
 
-        sf.write("prova_croppad.wav", y, sr)
-        return y
+        return y,sr

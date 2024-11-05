@@ -186,18 +186,26 @@ if __name__ == '__main__':
     import libreria_tmp as tmp
     model, _ = generate_model(opt)
     # da vedere torch.load che fa 
-    best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name) + str(0) + '.pth', map_location=torch.device('cpu'))
+    #best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name) + str(0) + '.pth', map_location=torch.device('cpu'))
+    
+    # Questo pth è il pretreinato da GiuseppeF 
+    best_state = torch.load('/Users/renatoesposito/Desktop/cognitive-robotics-project/modello-test/results/RAVDESS_multimodalcnn_15_best0.pth', map_location=torch.device('cpu'))
     #model.load_state_dict(best_state['state_dict'],strict=False)
+    #Questo è il nostro 
+    #best_state = torch.load('/Users/renatoesposito/Desktop/cognitive-robotics-project/end-to-end-mm-ers/models/RAVDESS_multimodalcnn_15_best0_04_11.pth', map_location=torch.device('cpu'))
+
+    
     model.load_state_dict(best_state['state_dict'])
     print("Tutto ok")
     # Esegui la predizione su un video specifico
-    video_path = 'C:/Users/Vince/Desktop/cognitive-robotics-project/test_vincenzo/ravdess_preprocessing/RAVDESS/ACTOR05/01-01-03-02-01-02-05_facecroppad.npy'
+    #video_path = 'C:/Users/Vince/Desktop/cognitive-robotics-project/test_vincenzo/ravdess_preprocessing/RAVDESS/ACTOR05/01-01-03-02-01-02-05_facecroppad.npy'
     #audio_path = 'C:/Users/Vince/Desktop/cognitive-robotics-project/test_vincenzo/prova_croppad.wav'
-    audio_path = "C:/Users/Vince/Desktop/cognitive-robotics-project/test_vincenzo/ravdess_preprocessing/RAVDESS/ACTOR05/03-01-03-02-01-02-05_croppad.wav"
-    #video = Video_preprocessing("C:/Users/Vince/Desktop/cognitive-robotics-project/test_vincenzo/prova_3_io.mp4")
-    #video_npy = video.process() 
+    audio_path = "/Users/renatoesposito/Desktop/cognitive-robotics-project/modello-test/prova_croppad.wav"
+    video = Video_preprocessing("/Users/renatoesposito/Desktop/cognitive-robotics-project/end-to-end-mm-ers/raw_data/angry_wrong_1.mp4")
+    video_npy = video.process() 
     print("Passo alla funzione")
-    predictions = tmp.predict_single_video(video_path, audio_path,model,input_size=(224,224), device='cpu',video_norm_value=opt.video_norm_value, batch_size=opt.batch_size)
+    predictions = tmp.predict_single_video(video_npy, audio_path,model,input_size=(224,224), device='cpu',video_norm_value=opt.video_norm_value, batch_size=opt.batch_size)
     #print(predictions)
+    
 
 
