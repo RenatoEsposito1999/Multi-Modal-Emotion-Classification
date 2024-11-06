@@ -12,13 +12,11 @@ if __name__ == '__main__':
     model, _ = generate_model(opt)
     model.eval()
     model.to(opt.device)
-        
-    # Questo pth è il pretreinato da GiuseppeF 
-    best_state = torch.load('/Users/renatoesposito/Desktop/cognitive-robotics-project/modello-test/results/RAVDESS_multimodalcnn_15_best0.pth', map_location=torch.device('cpu'))
-    #Questo è il nostro 
-    #best_state = torch.load('/Users/renatoesposito/Desktop/cognitive-robotics-project/end-to-end-mm-ers/models/RAVDESS_multimodalcnn_15_best0_04_11.pth', map_location=torch.device('cpu'))
-    model.load_state_dict(best_state['state_dict'])
-    input_path="/Users/renatoesposito/Desktop/cognitive-robotics-project/modello-test/raw_data/angry_wrong_1.mp4"
+
+    #PROBLEMA: SU MAC vuole cuda e il modello non funziona senza cuda questa cosa va sistemata forse nel trainig. 
+    best_state = torch.load('/Users/renatoesposito/Desktop/cognitive-robotics-project/multimodal-emotion-recognition-main/lt_1head_moddrop_2.pth', map_location=torch.device('cpu'))
+    model.load_state_dict(best_state['state_dict'],strict=False)
+    input_path="/Users/renatoesposito/Desktop/cognitive-robotics-project/multimodal-emotion-recognition-main/raw_data/angry_wrong_1.mp4"
     audio_var, video_var = preprocessing.predict_single_video(input_path,video_norm_value=opt.video_norm_value, batch_size=opt.batch_size)
     with torch.no_grad():
         output = model(x_audio=audio_var, x_visual=video_var)

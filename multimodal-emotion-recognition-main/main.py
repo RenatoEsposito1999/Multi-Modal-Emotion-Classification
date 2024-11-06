@@ -158,7 +158,8 @@ if __name__ == '__main__':
             test_data = get_test_set(opt, spatial_transform=video_transform) 
         
             #load best model
-            best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name)+str(fold)+'.pth')
+            #best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name)+str(fold)+'.pth')
+            best_state = torch.load('/Users/renatoesposito/Desktop/cognitive-robotics-project/multimodal-emotion-recognition-main/lt_1head_moddrop_2.pth', map_location=torch.device('cpu'))
             model.load_state_dict(best_state['state_dict'])
         
             test_loader = torch.utils.data.DataLoader(

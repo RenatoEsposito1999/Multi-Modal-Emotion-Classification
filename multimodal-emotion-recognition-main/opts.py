@@ -45,9 +45,9 @@ def parse_opts():
     
     parser.add_argument('--n_threads', default=16, type=int, help='Number of threads for multi-thread loading')
     parser.add_argument('--video_norm_value', default=255, type=int, help='If 1, range of inputs is [0-255]. If 255, range of inputs is [0-1].')
- 
+
     parser.add_argument('--manual_seed', default=1, type=int, help='Manually set random seed')
-    parser.add_argument('--fusion', default='ia', type=str, help='fusion type: lt | it | ia')
+    parser.add_argument('--fusion', default='lt', type=str, help='fusion type: lt | it | ia')
     parser.add_argument('--mask', type=str, help='dropout type : softhard | noise | nodropout', default='softhard')
     args = parser.parse_args()
 
