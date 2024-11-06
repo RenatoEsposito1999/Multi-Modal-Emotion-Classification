@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     #PROBLEMA: SU MAC vuole cuda e il modello non funziona senza cuda questa cosa va sistemata forse nel trainig. 
     best_state = torch.load('/Users/renatoesposito/Desktop/cognitive-robotics-project/multimodal-emotion-recognition-main/lt_1head_moddrop_2.pth', map_location=torch.device('cpu'))
-    model.load_state_dict(best_state['state_dict'],strict=False)
+    model.load_state_dict(best_state['state_dict'])
     input_path="/Users/renatoesposito/Desktop/cognitive-robotics-project/multimodal-emotion-recognition-main/raw_data/angry_wrong_1.mp4"
     audio_var, video_var = preprocessing.predict_single_video(input_path,video_norm_value=opt.video_norm_value, batch_size=opt.batch_size)
     with torch.no_grad():
