@@ -4,7 +4,8 @@ import torch
 from opts import parse_opts
 from model import generate_model
 if __name__ == '__main__':
-    emotion_dict=['neutral','calm', 'happy', 'sad', 'angry', 'fearful', 'disgust', 'surprised']
+    #emotion_dict=['neutral','calm', 'happy', 'sad', 'angry', 'fearful', 'disgust', 'surprised']
+    emotion_dict=['Neutral','Happy','Angry','Sad']
     opt = parse_opts()
     n_folds = 1
     test_accuracies = []

@@ -12,8 +12,9 @@ def parse_opts():
     parser.add_argument('--result_path', default='results', type=str, help='Result directory path')
     parser.add_argument('--store_name', default='model', type=str, help='Name to store checkpoints')
     parser.add_argument('--dataset', default='RAVDESS', type=str, help='Used dataset. Currently supporting Ravdess')
-    parser.add_argument('--n_classes', default=8, type=int, help='Number of classes')
-    
+    #parser.add_argument('--n_classes', default=8, type=int, help='Number of classes')
+    parser.add_argument('--n_classes', default=4, type=int, help='Number of classes')
+
     parser.add_argument('--model', default='multimodalcnn', type=str, help='')
     parser.add_argument('--num_heads', default=1, type=int, help='number of heads, in the paper 1 or 4')
     
