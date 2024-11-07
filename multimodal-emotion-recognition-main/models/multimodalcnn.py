@@ -188,7 +188,8 @@ class MultiModalCNN(nn.Module):
             self.av1 = Attention(in_dim_k=input_dim_video, in_dim_q=input_dim_audio, out_dim=input_dim_audio, num_heads=num_heads)
             self.va1 = Attention(in_dim_k=input_dim_audio, in_dim_q=input_dim_video, out_dim=input_dim_video, num_heads=num_heads)
 
-            
+        
+        
         self.classifier_1 = nn.Sequential(
                     nn.Linear(e_dim*2, num_classes),
                 )
@@ -197,7 +198,7 @@ class MultiModalCNN(nn.Module):
 
     def forward(self, x_audio, x_visual):
 
-        if self.fusion == 'lt':
+        if self.fusion == 'lt': 
             return self.forward_transformer(x_audio, x_visual)
 
         elif self.fusion == 'ia':
@@ -282,13 +283,21 @@ class MultiModalCNN(nn.Module):
         proj_x_v = proj_x_v.permute(0, 2, 1)
         h_av = self.av(proj_x_v, proj_x_a)
         h_va = self.va(proj_x_a, proj_x_v)
+        
+        
        
         audio_pooled = h_av.mean([1]) #mean accross temporal dimension
         video_pooled = h_va.mean([1])
 
-        x = torch.cat((audio_pooled, video_pooled), dim=-1)  
+        
+        x = torch.cat((audio_pooled, video_pooled), dim=-1) 
+        #concatenated_embeddings = torch.cat((audio_pooled, video_pooled), dim=1)
+        
         x1 = self.classifier_1(x)
-        return x1
+        return x, x1
+        
+    def classify(self, embeddings):
+        return self.classifier_1(embeddings)
  
     
     

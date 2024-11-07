@@ -5,6 +5,7 @@ import torch
 from torch.autograd import Variable
 import time
 from utils import AverageMeter, calculate_accuracy
+from models.ContrastiveLearning import SupervisedConstrastiveLoss
 
 def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
                 epoch_logger, batch_logger):
@@ -19,6 +20,8 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
     top5 = AverageMeter()
         
     end_time = time.time()
+    contrastive_loss_fn = SupervisedConstrastiveLoss(temperature=0.5)
+    
     for i, (audio_inputs, visual_inputs, targets) in enumerate(data_loader):
         data_time.update(time.time() - end_time)
 
@@ -61,16 +64,24 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
         visual_inputs = Variable(visual_inputs)
 
         targets = Variable(targets)
-        outputs = model(audio_inputs, visual_inputs)
+        
+        embeddings, outputs = model(audio_inputs, visual_inputs)
+        
+        loss_contrastive = contrastive_loss_fn(embeddings, targets)
+        
         loss = criterion(outputs, targets)
-
-        losses.update(loss.data, audio_inputs.size(0))
+        
+        total_loss = loss + loss_contrastive
+        print(f"Loss_contrastive: {loss_contrastive}, loss_modello: {loss}, total_loss: {total_loss}")
+        
+        #losses.update(total_loss, audio_inputs.size(0))
         prec1, prec5 = calculate_accuracy(outputs.data, targets.data, topk=(1,5))
         top1.update(prec1, audio_inputs.size(0))
         top5.update(prec5, audio_inputs.size(0))
+        
 
         optimizer.zero_grad()
-        loss.backward()
+        total_loss.backward()
         optimizer.step()
 
         batch_time.update(time.time() - end_time)
@@ -80,7 +91,7 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
             'epoch': epoch,
             'batch': i + 1,
             'iter': (epoch - 1) * len(data_loader) + (i + 1),
-            'loss': losses.val.item(),
+            'loss': total_loss,
             'prec1': top1.val.item(),
             'prec5': top5.val.item(),
             'lr': optimizer.param_groups[0]['lr']
