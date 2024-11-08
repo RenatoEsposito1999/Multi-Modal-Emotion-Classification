@@ -10,7 +10,7 @@ def generate_model(opt):
     assert opt.model in ['multimodalcnn']
 
     if opt.model == 'multimodalcnn':   
-        model = multimodalcnn.MultiModalCNN(opt.n_classes, fusion = opt.fusion, seq_length = opt.sample_duration, pretr_ef=opt.pretrain_path, num_heads=opt.num_heads)
+        model = multimodalcnn.MultiModalCNN(opt.n_classes, seq_length = opt.sample_duration, pretr_ef=opt.pretrain_path, num_heads=opt.num_heads)
 
 
     if opt.device != 'cpu':

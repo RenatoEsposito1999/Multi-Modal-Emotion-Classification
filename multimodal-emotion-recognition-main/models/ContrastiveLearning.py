@@ -2,37 +2,76 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class SupervisedConstrastiveLoss(nn.Module):
-    def __init__(self,temperature=0.5):
-        super(SupervisedConstrastiveLoss,self).__init__()
+# Starting testing phase
+'''
+        embeds = torch.cat((embeddings,embeddings),dim=0)
+        labels = torch.cat((labels,labels),dim=0)
+        print("embedss",embeds.shape)
+        print("labels",labels.shape)
+        print("cosine sim",cosine_sim.shape)
+        print("mask:",mask.shape)
+'''
+class SupervisedContrastiveLoss(nn.Module):
+    def __init__(self, temperature=0.5):
+        super(SupervisedContrastiveLoss, self).__init__()
         self.temperature = temperature
 
-    def forward(self, embeddings, labels):
+    
+    def forward(self,audio_embedding,video_embedding,eeg_embedding,sync_labels,async_labels):
+
         """
-        embeddings: Tensor of shape (batch_size * 2, d_model)
-                    - The first half of the embeddings tensor is assumed to be from one modality (e.g., audio),
-                      and the second half from another modality (e.g., video).
+        embedding: Tensor of shape (batch_size,embed_dim)
+                - Audio embed synced with Video embed
+                - EEG embed asynced with the rest of two 
         labels: Tensor of shape (batch_size)
-                - Each label corresponds to one pair of embeddings from different modalities.
+                - Sync_labels: Each label correspond to the class given to audio/video
+                - Async_labels: Each label correspond to the EEG class
         """
-        # Normalize the embeddings
-        embeddings = F.normalize(embeddings, dim=1)
-        # Split the embeddings tensor into the two modalities
-        modality1, modality2 = embeddings[:3], embeddings[3:]
-        print(modality1, modality2)
-        # Compute cosine similarity between each pair from modality1 and modality2
-        cosine_sim = torch.matmul(modality1, modality2.T) / self.temperature
-        print("cosine_sim: ", cosine_sim)
-        # Create a mask to indicate positive pairs (same label across the two modalities)
-        labels_eq = labels.unsqueeze(1) == labels.unsqueeze(0)
-        mask = labels_eq.float()  # Mask has shape (batch_size, batch_size)
-        
-        # Calculate positive similarity: only cross-modality pairs with the same label
-        pos_sim = cosine_sim * mask
-        sum_pos_sim = pos_sim.sum(1)
-        # Calculate the denominator for normalization (sum of all similarities in each row)
-        exp_sim = torch.exp(cosine_sim)
-        denominator = exp_sim.sum(1)
-        # Calculate supervised contrastive loss
-        loss = -torch.log(sum_pos_sim / denominator)
-        return loss.mean()
+        audio_embeds = F.normalize(audio_embedding,dim=1)
+        video_embeds = F.normalize(video_embedding,dim=1)
+        eeg_embeds = F.normalize(eeg_embedding,dim=1)
+
+        video_audio_sim = torch.matmul(video_embeds,audio_embeds.T)/self.temperature
+        video_eeg_sim = torch.matmul(video_embeds,eeg_embeds.T)/self.temperature
+        audio_eeg_sim = torch.matmul(audio_embeds,eeg_embeds.T)/self.temperature
+
+        # Start computation of similarity for sync source
+
+        sync_mask = sync_labels.unsqueeze(1) == sync_labels.unsqueeze(0)
+        pos_mask_sync = sync_mask.float()
+
+        async_mask = async_labels.unsqueeze(1) == sync_labels.unsqueeze(0)
+        pos_mask_async = async_mask.float()
+        neg_mask_async = 1 - pos_mask_sync
+
+        pos_sim_video_audio = torch.exp(video_audio_sim)*pos_mask_sync
+        sum_pos_sim_video_audio = pos_sim_video_audio.sum(1)
+
+        pos_sim_video_eeg = torch.exp(video_eeg_sim) * pos_mask_async
+        neg_sim_video_eeg = torch.exp(video_eeg_sim) * neg_mask_async
+
+        pos_sim_audio_eeg = torch.exp(audio_eeg_sim) * pos_mask_async
+        neg_sim_audio_eeg = torch.exp(audio_eeg_sim) * neg_mask_async
+
+        sum_pos_sim_video_eeg = pos_sim_video_eeg.sum(1)
+        sum_pos_sim_audio_eeg = pos_sim_audio_eeg.sum(1)
+
+        sum_neg_sim_video_eeg = neg_sim_video_eeg.sum(1)
+        sum_neg_sim_audio_eeg = neg_sim_audio_eeg.sum(1)
+
+        all_sim_video_audio = torch.exp(video_audio_sim).sum(1)
+        all_sim_video_eeg = torch.exp(video_eeg_sim).sum(1)
+        all_sim_audio_eeg = torch.exp(audio_eeg_sim).sum(1)
+
+        # Contrastive loss calculation
+        # Adding negative pairs for EEG-video and EEG-audio pairs in denominator to repel mismatched labels
+        loss_video_audio = -torch.log((sum_pos_sim_video_audio + 1e-8) / (all_sim_video_audio + 1e-8))
+        loss_video_eeg = -torch.log((sum_pos_sim_video_eeg + 1e-8) / (all_sim_video_eeg + sum_neg_sim_video_eeg + 1e-8))
+        loss_audio_eeg = -torch.log((sum_pos_sim_audio_eeg + 1e-8) / (all_sim_audio_eeg + sum_neg_sim_audio_eeg + 1e-8))
+
+        # Final loss is the mean across all pairs
+        loss = (loss_video_audio.mean() + loss_video_eeg.mean() + loss_audio_eeg.mean()) / 3.0
+        return loss
+
+
+

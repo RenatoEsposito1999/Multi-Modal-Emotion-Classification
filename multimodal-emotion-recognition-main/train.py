@@ -5,10 +5,11 @@ import torch
 from torch.autograd import Variable
 import time
 from utils import AverageMeter, calculate_accuracy
-from models.ContrastiveLearning import SupervisedConstrastiveLoss
+from models.ContrastiveLearning import SupervisedContrastiveLoss
+
 
 def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
-                epoch_logger, batch_logger):
+                epoch_logger, batch_logger, EEGDataLoader_train, EEGModel):
     print('train at epoch {}'.format(epoch))
     
     model.train()
@@ -20,13 +21,21 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
     top5 = AverageMeter()
         
     end_time = time.time()
-    contrastive_loss_fn = SupervisedConstrastiveLoss(temperature=0.5)
+    contrastive_loss_fn = SupervisedContrastiveLoss(temperature=0.5)
     
-    for i, (audio_inputs, visual_inputs, targets) in enumerate(data_loader):
+    
+    for i, (item1, item2) in enumerate(zip(data_loader, EEGDataLoader_train)):
         data_time.update(time.time() - end_time)
 
    
+        
+        audio_inputs, visual_inputs, targets = item1
+        
+        EEG_inputs, EEG_targets = item2
         targets = targets.to(opt.device)
+        EEG_inputs = EEG_inputs.to(opt.device)
+        EEG_targets = EEG_targets.to(opt.device)
+        
             
         if opt.mask is not None:
             with torch.no_grad():
@@ -65,21 +74,22 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
 
         targets = Variable(targets)
         
-        embeddings, outputs = model(audio_inputs, visual_inputs)
+        audio_embeddings, video_embeddings, outputs = model(audio_inputs, visual_inputs)
+        EEG_embeddigs = EEGModel(EEG_inputs)
         
-        loss_contrastive = contrastive_loss_fn(embeddings, targets)
+        loss_contrastive = contrastive_loss_fn(audio_embeddings, video_embeddings, EEG_embeddigs, targets, EEG_targets)
         
         loss = criterion(outputs, targets)
         
         total_loss = loss + loss_contrastive
-        print(f"Loss_contrastive: {loss_contrastive}, loss_modello: {loss}, total_loss: {total_loss}")
+        #print(f"Loss_contrastive: {loss_contrastive}, loss_modello: {loss}, total_loss: {total_loss}")
         
         #losses.update(total_loss, audio_inputs.size(0))
+        
         prec1, prec5 = calculate_accuracy(outputs.data, targets.data, topk=(1,5))
         top1.update(prec1, audio_inputs.size(0))
         top5.update(prec5, audio_inputs.size(0))
         
-
         optimizer.zero_grad()
         total_loss.backward()
         optimizer.step()
@@ -100,7 +110,7 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
             print('Epoch: [{0}][{1}/{2}]\t lr: {lr:.5f}\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                  'Loss {loss}\t'
                   'Prec@1 {top1.val:.5f} ({top1.avg:.5f})\t'
                   'Prec@5 {top5.val:.5f} ({top5.avg:.5f})'.format(
                       epoch,
@@ -108,7 +118,7 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
                       len(data_loader),
                       batch_time=batch_time,
                       data_time=data_time,
-                      loss=losses,
+                      loss=total_loss,
                       top1=top1,
                       top5=top5,
                       lr=optimizer.param_groups[0]['lr']))
@@ -123,11 +133,11 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
 
  
 def train_epoch(epoch, data_loader, model, criterion, optimizer, opt,
-                epoch_logger, batch_logger):
+                epoch_logger, batch_logger, EEGDataLoader_train, EEGModel):
     print('train at epoch {}'.format(epoch))
     
     if opt.model == 'multimodalcnn':
-        train_epoch_multimodal(epoch,  data_loader, model, criterion, optimizer, opt, epoch_logger, batch_logger)
+        train_epoch_multimodal(epoch,  data_loader, model, criterion, optimizer, opt, epoch_logger, batch_logger, EEGDataLoader_train, EEGModel)
         return
     
     

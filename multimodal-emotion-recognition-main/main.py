@@ -20,6 +20,8 @@ from train import train_epoch
 from validation import val_epoch
 import time
 
+from SimulatedDataset import SimulatedEEGDataset
+from models.EEGTransformer import EEGCNNTransformerEncoder
 
 if __name__ == '__main__':
     opt = parse_opts()
@@ -37,6 +39,11 @@ if __name__ == '__main__':
         
     opt.arch = '{}'.format(opt.model)  
     opt.store_name = '_'.join([opt.dataset, opt.model, str(opt.sample_duration)])
+    
+    EEGDataset_train = SimulatedEEGDataset(num_samples=1920)
+    EEGDataset_validation = SimulatedEEGDataset(num_samples=480)
+    EEGDataset_testing = SimulatedEEGDataset(num_samples=480)
+   
             
     for fold in range(n_folds):
         #if opt.dataset == 'RAVDESS':
@@ -48,6 +55,8 @@ if __name__ == '__main__':
             
         torch.manual_seed(opt.manual_seed)
         model, parameters = generate_model(opt)
+        EEGModel = EEGCNNTransformerEncoder()
+        EEGModel = EEGModel.to(opt.device)
 
         criterion = nn.CrossEntropyLoss()
         criterion = criterion.to(opt.device)
@@ -67,6 +76,14 @@ if __name__ == '__main__':
                 shuffle=True,
                 num_workers=opt.n_threads,
                 pin_memory=True)
+            
+            EEGDataLoader_train = torch.utils.data.DataLoader(
+                EEGDataset_train,
+                batch_size=opt.batch_size,
+                shuffle=True,
+                num_workers=opt.n_threads,
+                pin_memory=True
+             )
         
             train_logger = Logger(
                 os.path.join(opt.result_path, 'train'+str(fold)+'.log'),
@@ -98,6 +115,13 @@ if __name__ == '__main__':
                 shuffle=False,
                 num_workers=opt.n_threads,
                 pin_memory=True)
+            
+            EEGDataLoader_val = torch.utils.data.DataLoader(
+                EEGDataset_validation,
+                batch_size=opt.batch_size,
+                shuffle=False,
+                num_workers=opt.n_threads,
+                pin_memory=True)
         
             val_logger = Logger(
                     os.path.join(opt.result_path, 'val'+str(fold)+'.log'), ['epoch', 'loss', 'prec1', 'prec5'])
@@ -120,7 +144,7 @@ if __name__ == '__main__':
             if not opt.no_train:
                 adjust_learning_rate(optimizer, i, opt)
                 train_epoch(i, train_loader, model, criterion, optimizer, opt,
-                            train_logger, train_batch_logger)
+                            train_logger, train_batch_logger, EEGDataLoader_train, EEGModel)
                 state = {
                     'epoch': i,
                     'arch': opt.arch,
@@ -132,7 +156,7 @@ if __name__ == '__main__':
             
             if not opt.no_val:
                 
-                validation_loss, prec1 = val_epoch(i, val_loader, model, criterion, opt,
+                validation_loss, prec1 = val_epoch(EEGDataLoader_val, EEGModel, i, val_loader, model, criterion, opt,
                                             val_logger)
                 is_best = prec1 > best_prec1
                 best_prec1 = max(prec1, best_prec1)
@@ -159,7 +183,7 @@ if __name__ == '__main__':
         
             #load best model
             #best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name)+str(fold)+'.pth')
-            best_state = torch.load('/Users/renatoesposito/Desktop/cognitive-robotics-project/multimodal-emotion-recognition-main/lt_1head_moddrop_2.pth', map_location=torch.device('cpu'))
+            best_state = torch.load('c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/lt_1head_moddrop_2.pth', map_location=torch.device('cpu'))
             model.load_state_dict(best_state['state_dict'])
         
             test_loader = torch.utils.data.DataLoader(
