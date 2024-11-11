@@ -105,8 +105,8 @@ def val_epoch_multimodal(EEGDataLoader_val, epoch, data_loader, model, criterion
 
     return losses_avarage.avg.item(), prec1_avarage.avg.item()
 
-def val_epoch(EEGDataLoader_val, EEGModel, epoch, data_loader, model, criterion, opt, logger, modality='both', dist=None):
+def val_epoch(EEGDataLoader_val, epoch, data_loader, model, criterion, opt, logger, modality='both', dist=None):
     print('validation at epoch {}'.format(epoch))
     if opt.model == 'multimodalcnn':
-        return val_epoch_multimodal(EEGDataLoader_val, EEGModel, epoch, data_loader, model, criterion, opt, logger, modality, dist=dist)
+        return val_epoch_multimodal(EEGDataLoader_val, epoch, data_loader, model, criterion, opt, logger, modality, dist=dist)
     
