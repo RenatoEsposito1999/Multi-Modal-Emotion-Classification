@@ -7,13 +7,12 @@ import time
 from utils import AverageMeter, calculate_precision
 from models.ContrastiveLearning import SupervisedContrastiveLoss
 
-def val_epoch_multimodal(EEGDataLoader_val, EEGModel, epoch, data_loader, model, criterion, opt, logger,modality='both',dist=None):
+def val_epoch_multimodal(EEGDataLoader_val, epoch, data_loader, model, criterion, opt, logger,modality='both',dist=None):
     #for evaluation with single modality, specify which modality to keep and which distortion to apply for the other modaltiy:
     #'noise', 'addnoise' or 'zeros'. for paper procedure, with 'softhard' mask use 'zeros' for evaluation, with 'noise' use 'noise'
     print('validation at epoch {}'.format(epoch))
     assert modality in ['both', 'audio', 'video']    
     model.eval()
-    EEGModel.eval()
 
     batch_time = AverageMeter()
     data_time = AverageMeter()
@@ -68,8 +67,7 @@ def val_epoch_multimodal(EEGDataLoader_val, EEGModel, epoch, data_loader, model,
             EEG_targets = Variable(EEG_targets)
             
         
-        audio_embeddings, video_embeddings, outputs = model(inputs_audio, inputs_visual)
-        EEG_embeddigs = EEGModel(EEG_inputs)
+        audio_embeddings, video_embeddings,EEG_embeddigs, outputs = model(inputs_audio, inputs_visual, EEG_inputs)
         
         loss_contrastive = contrastive_loss_fn(audio_embeddings, video_embeddings, EEG_embeddigs, targets, EEG_targets)
         

@@ -9,9 +9,9 @@ from models.ContrastiveLearning import SupervisedContrastiveLoss
 
 
 def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
-                epoch_logger, batch_logger, EEGDataLoader_train, EEGModel):
+                epoch_logger, batch_logger, EEGDataLoader_train):
     print('train at epoch {}'.format(epoch))
-    
+
     model.train()
 
     batch_time = AverageMeter()
@@ -69,9 +69,8 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
 
         targets = Variable(targets)
         
-        audio_embeddings, video_embeddings, outputs = model(audio_inputs, visual_inputs)
-        EEG_embeddigs = EEGModel(EEG_inputs)
-        
+        audio_embeddings, video_embeddings, EEG_embeddigs, outputs = model(audio_inputs, visual_inputs, EEG_inputs)
+       
         loss_contrastive = contrastive_loss_fn(audio_embeddings, video_embeddings, EEG_embeddigs, targets, EEG_targets)
         
         loss = criterion(outputs, targets)
@@ -124,11 +123,11 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
 
  
 def train_epoch(epoch, data_loader, model, criterion, optimizer, opt,
-                epoch_logger, batch_logger, EEGDataLoader_train, EEGModel):
+                epoch_logger, batch_logger, EEGDataLoader_train):
     print('train at epoch {}'.format(epoch))
     
     if opt.model == 'multimodalcnn':
-        train_epoch_multimodal(epoch,  data_loader, model, criterion, optimizer, opt, epoch_logger, batch_logger, EEGDataLoader_train, EEGModel)
+        train_epoch_multimodal(epoch,  data_loader, model, criterion, optimizer, opt, epoch_logger, batch_logger, EEGDataLoader_train)
         return
     
     

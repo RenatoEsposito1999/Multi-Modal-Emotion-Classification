@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 class SimulatedEEGDataset(Dataset):
-    def __init__(self, num_samples=1000, sequence_length=256, num_channels=64, num_classes=4, noise_level=0.1):
+    def __init__(self, num_samples=1000, sequence_length=128, num_channels=64, num_classes=4, noise_level=0.1):
         self.num_samples = num_samples
         self.sequence_length = sequence_length
         self.num_channels = num_channels

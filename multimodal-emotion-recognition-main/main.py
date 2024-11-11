@@ -55,8 +55,9 @@ if __name__ == '__main__':
             
         torch.manual_seed(opt.manual_seed)
         model, parameters = generate_model(opt)
-        EEGModel = EEGCNNTransformerEncoder()
-        EEGModel = EEGModel.to(opt.device)
+        
+        '''EEGModel = EEGCNNTransformerEncoder()
+        EEGModel = EEGModel.to(opt.device)'''
 
         criterion = nn.CrossEntropyLoss()
         criterion = criterion.to(opt.device)
@@ -144,7 +145,7 @@ if __name__ == '__main__':
             if not opt.no_train:
                 adjust_learning_rate(optimizer, i, opt)
                 train_epoch(i, train_loader, model, criterion, optimizer, opt,
-                            train_logger, train_batch_logger, EEGDataLoader_train, EEGModel)
+                            train_logger, train_batch_logger, EEGDataLoader_train)
                 state = {
                     'epoch': i,
                     'arch': opt.arch,
@@ -156,7 +157,7 @@ if __name__ == '__main__':
             
             if not opt.no_val:
                 
-                validation_loss, prec1 = val_epoch(EEGDataLoader_val, EEGModel, i, val_loader, model, criterion, opt,
+                validation_loss, prec1 = val_epoch(EEGDataLoader_val, i, val_loader, model, criterion, opt,
                                             val_logger)
                 is_best = prec1 > best_prec1
                 best_prec1 = max(prec1, best_prec1)
