@@ -4,7 +4,7 @@ This code is based on https://github.com/okankop/Efficient-3DCNNs
 import torch
 from torch.autograd import Variable
 import time
-from utils import AverageMeter, calculate_accuracy
+from utils import AverageMeter, calculate_precision
 from models.ContrastiveLearning import SupervisedContrastiveLoss
 
 def val_epoch_multimodal(EEGDataLoader_val, EEGModel, epoch, data_loader, model, criterion, opt, logger,modality='both',dist=None):
@@ -17,9 +17,9 @@ def val_epoch_multimodal(EEGDataLoader_val, EEGModel, epoch, data_loader, model,
 
     batch_time = AverageMeter()
     data_time = AverageMeter()
-    losses = AverageMeter()
-    top1 = AverageMeter()
-    top5 = AverageMeter()
+    losses_avarage = AverageMeter()
+    prec1_avarage = AverageMeter()
+   
 
     end_time = time.time()
     for i, (item1, item2) in enumerate(zip(data_loader, EEGDataLoader_val)):
@@ -77,11 +77,13 @@ def val_epoch_multimodal(EEGDataLoader_val, EEGModel, epoch, data_loader, model,
         
         total_loss = loss + loss_contrastive
         
-        prec1, prec5 = calculate_accuracy(outputs.data, targets.data, topk=(1,5))
-        top1.update(prec1, inputs_audio.size(0))
-        top5.update(prec5, inputs_audio.size(0))
+         
+        prec1 = calculate_precision(outputs.data, targets.data)
+       
+        #prec1, prec5 = calculate_accuracy(outputs.data, targets.data, topk=(1,5))
+        losses_avarage.update(total_loss.data, inputs_audio.size(0))
+        prec1_avarage.update(prec1, inputs_audio.size(0))
 
-        #losses.update(loss.data, inputs_audio.size(0))
 
         batch_time.update(time.time() - end_time)
         end_time = time.time()
@@ -90,23 +92,20 @@ def val_epoch_multimodal(EEGDataLoader_val, EEGModel, epoch, data_loader, model,
               'Time {batch_time.val:.5f} ({batch_time.avg:.5f})\t'
               'Data {data_time.val:.5f} ({data_time.avg:.5f})\t'
               'Loss {loss}\t'
-              'Prec@1 {top1.val:.5f} ({top1.avg:.5f})\t'
-              'Prec@5 {top5.val:.5f} ({top5.avg:.5f})'.format(
+              'Prec@1 {prec1_avarage.val:.5f} ({prec1_avarage.avg:.5f})\t'.format(
                   epoch,
                   i + 1,
                   len(data_loader),
                   batch_time=batch_time,
                   data_time=data_time,
                   loss=total_loss,
-                  top1=top1,
-                  top5=top5))
+                  prec1_avarage=prec1_avarage))
 
     logger.log({'epoch': epoch,
-                'loss': losses.avg.item(),
-                'prec1': top1.avg.item(),
-                'prec5': top5.avg.item()})
+                'loss': losses_avarage.avg.item(),
+                'prec1': prec1_avarage.avg.item()})
 
-    return losses.avg.item(), top1.avg.item()
+    return losses_avarage.avg.item(), prec1_avarage.avg.item()
 
 def val_epoch(EEGDataLoader_val, EEGModel, epoch, data_loader, model, criterion, opt, logger, modality='both', dist=None):
     print('validation at epoch {}'.format(epoch))

@@ -87,10 +87,10 @@ if __name__ == '__main__':
         
             train_logger = Logger(
                 os.path.join(opt.result_path, 'train'+str(fold)+'.log'),
-                ['epoch', 'loss', 'prec1', 'prec5', 'lr'])
+                ['epoch', 'loss', 'prec1', 'lr'])
             train_batch_logger = Logger(
                 os.path.join(opt.result_path, 'train_batch'+str(fold)+'.log'),
-                ['epoch', 'batch', 'iter', 'loss', 'prec1', 'prec5', 'lr'])
+                ['epoch', 'batch', 'iter', 'loss', 'prec1', 'lr'])
             
 
             optimizer = optim.SGD(
@@ -124,9 +124,9 @@ if __name__ == '__main__':
                 pin_memory=True)
         
             val_logger = Logger(
-                    os.path.join(opt.result_path, 'val'+str(fold)+'.log'), ['epoch', 'loss', 'prec1', 'prec5'])
+                    os.path.join(opt.result_path, 'val'+str(fold)+'.log'), ['epoch', 'loss', 'prec1'])
             test_logger = Logger(
-                    os.path.join(opt.result_path, 'test'+str(fold)+'.log'), ['epoch', 'loss', 'prec1', 'prec5'])
+                    os.path.join(opt.result_path, 'test'+str(fold)+'.log'), ['epoch', 'loss', 'prec1'])
 
             
         best_prec1 = 0
@@ -174,7 +174,7 @@ if __name__ == '__main__':
         if opt.test:
 
             test_logger = Logger(
-                    os.path.join(opt.result_path, 'test'+str(fold)+'.log'), ['epoch', 'loss', 'prec1', 'prec5'])
+                    os.path.join(opt.result_path, 'test'+str(fold)+'.log'), ['epoch', 'loss', 'prec1'])
 
             video_transform = transforms.Compose([
                 transforms.ToTensor(opt.video_norm_value)])

@@ -79,6 +79,13 @@ def calculate_accuracy(output, target, topk=(1,), binary=False):
     return res
 
 
+def calculate_precision(outputs, targets):
+    precision_1 = torch.sum(torch.max(outputs, 1).indices==targets)
+    precision_1 = precision_1 / targets.size(0) #batchsize
+    return precision_1
+    
+
+
 def save_checkpoint(state, is_best, opt, fold):
     torch.save(state, '%s/%s_checkpoint'% (opt.result_path, opt.store_name)+str(fold)+'.pth')
     if is_best:

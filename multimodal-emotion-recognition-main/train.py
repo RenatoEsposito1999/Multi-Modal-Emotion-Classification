@@ -4,7 +4,7 @@ This code is based on https://github.com/okankop/Efficient-3DCNNs
 import torch
 from torch.autograd import Variable
 import time
-from utils import AverageMeter, calculate_accuracy
+from utils import AverageMeter, calculate_accuracy, calculate_precision
 from models.ContrastiveLearning import SupervisedContrastiveLoss
 
 
@@ -16,9 +16,8 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
 
     batch_time = AverageMeter()
     data_time = AverageMeter()
-    losses = AverageMeter()
-    top1 = AverageMeter()
-    top5 = AverageMeter()
+    losses_avarage = AverageMeter()
+    prec1_avarage = AverageMeter()
         
     end_time = time.time()
     contrastive_loss_fn = SupervisedContrastiveLoss(temperature=0.5)
@@ -26,9 +25,7 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
     
     for i, (item1, item2) in enumerate(zip(data_loader, EEGDataLoader_train)):
         data_time.update(time.time() - end_time)
-
-   
-        
+    
         audio_inputs, visual_inputs, targets = item1
         
         EEG_inputs, EEG_targets = item2
@@ -64,8 +61,6 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
                     visual_inputs = visual_inputs[shuffle]
                     targets = targets[shuffle]
    
-  
-
         visual_inputs = visual_inputs.permute(0,2,1,3,4)
         visual_inputs = visual_inputs.reshape(visual_inputs.shape[0]*visual_inputs.shape[1], visual_inputs.shape[2], visual_inputs.shape[3], visual_inputs.shape[4])
         
@@ -84,11 +79,11 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
         total_loss = loss + loss_contrastive
         #print(f"Loss_contrastive: {loss_contrastive}, loss_modello: {loss}, total_loss: {total_loss}")
         
-        #losses.update(total_loss, audio_inputs.size(0))
-        
-        prec1, prec5 = calculate_accuracy(outputs.data, targets.data, topk=(1,5))
-        top1.update(prec1, audio_inputs.size(0))
-        top5.update(prec5, audio_inputs.size(0))
+        prec1 = calculate_precision(outputs.data, targets.data)
+       
+        #prec1, prec5 = calculate_accuracy(outputs.data, targets.data, topk=(1,5))
+        losses_avarage.update(total_loss.data, audio_inputs.size(0))
+        prec1_avarage.update(prec1, audio_inputs.size(0))
         
         optimizer.zero_grad()
         total_loss.backward()
@@ -101,33 +96,29 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
             'epoch': epoch,
             'batch': i + 1,
             'iter': (epoch - 1) * len(data_loader) + (i + 1),
-            'loss': total_loss,
-            'prec1': top1.val.item(),
-            'prec5': top5.val.item(),
+            'loss': losses_avarage.val.item(),
+            'prec1': prec1_avarage.val.item(),
             'lr': optimizer.param_groups[0]['lr']
         })
         if i % 10 ==0:
             print('Epoch: [{0}][{1}/{2}]\t lr: {lr:.5f}\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                  'Loss {loss}\t'
-                  'Prec@1 {top1.val:.5f} ({top1.avg:.5f})\t'
-                  'Prec@5 {top5.val:.5f} ({top5.avg:.5f})'.format(
+                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                  'Prec@1 {prec1_avarage.val:.5f} ({prec1_avarage.avg:.5f})\t'.format(
                       epoch,
                       i,
                       len(data_loader),
                       batch_time=batch_time,
                       data_time=data_time,
-                      loss=total_loss,
-                      top1=top1,
-                      top5=top5,
+                      loss=losses_avarage,
+                      prec1_avarage=prec1_avarage,
                       lr=optimizer.param_groups[0]['lr']))
 
     epoch_logger.log({
         'epoch': epoch,
-        'loss': losses.avg.item(),
-        'prec1': top1.avg.item(),
-        'prec5': top5.avg.item(),
+        'loss': losses_avarage.avg.item(),
+        'prec1': prec1_avarage.avg.item(),
         'lr': optimizer.param_groups[0]['lr']
     })
 
