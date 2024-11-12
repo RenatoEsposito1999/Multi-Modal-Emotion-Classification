@@ -5,7 +5,7 @@ import torch
 from torch.autograd import Variable
 import time
 from utils import AverageMeter, calculate_accuracy, calculate_precision
-from models.ContrastiveLearning import SupervisedContrastiveLoss
+from ContrastiveLearning import SupervisedContrastiveLoss
 
 
 def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
@@ -122,12 +122,6 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
     })
 
  
-def train_epoch(epoch, data_loader, model, criterion, optimizer, opt,
-                epoch_logger, batch_logger, EEGDataLoader_train):
-    print('train at epoch {}'.format(epoch))
-    
-    if opt.model == 'multimodalcnn':
-        train_epoch_multimodal(epoch,  data_loader, model, criterion, optimizer, opt, epoch_logger, batch_logger, EEGDataLoader_train)
-        return
+
     
     

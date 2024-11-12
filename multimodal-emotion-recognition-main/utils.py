@@ -86,8 +86,9 @@ def calculate_precision(outputs, targets):
     
 
 
-def save_checkpoint(state, is_best, opt, fold):
-    torch.save(state, '%s/%s_checkpoint'% (opt.result_path, opt.store_name)+str(fold)+'.pth')
+def save_checkpoint(state, is_best, opt, fold, train):
+    if train:
+        torch.save(state, '%s/%s_checkpoint'% (opt.result_path, opt.store_name)+str(fold)+'.pth')
     if is_best:
         shutil.copyfile('%s/%s_checkpoint' % (opt.result_path, opt.store_name)+str(fold)+'.pth','%s/%s_best' % (opt.result_path, opt.store_name)+str(fold)+'.pth')
 

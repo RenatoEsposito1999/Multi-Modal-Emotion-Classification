@@ -5,7 +5,7 @@ import torch
 from torch.autograd import Variable
 import time
 from utils import AverageMeter, calculate_precision
-from models.ContrastiveLearning import SupervisedContrastiveLoss
+from ContrastiveLearning import SupervisedContrastiveLoss
 
 def val_epoch_multimodal(EEGDataLoader_val, epoch, data_loader, model, criterion, opt, logger,modality='both',dist=None):
     #for evaluation with single modality, specify which modality to keep and which distortion to apply for the other modaltiy:
@@ -33,7 +33,7 @@ def val_epoch_multimodal(EEGDataLoader_val, epoch, data_loader, model, criterion
         
         contrastive_loss_fn = SupervisedContrastiveLoss(temperature=0.5)
 
-        if modality == 'audio':
+        '''if modality == 'audio':
             print('Skipping video modality')
             if dist == 'noise':
                 print('Evaluating with full noise')
@@ -55,7 +55,8 @@ def val_epoch_multimodal(EEGDataLoader_val, epoch, data_loader, model, criterion
                 inputs_audio = inputs_audio + (torch.mean(inputs_audio) + torch.std(inputs_audio)*torch.randn(inputs_audio.size()))
 
             elif dist == 'zeros':
-                inputs_audio = torch.zeros(inputs_audio.size())
+                inputs_audio = torch.zeros(inputs_audio.size())'''
+        
         inputs_visual = inputs_visual.permute(0,2,1,3,4)
         inputs_visual = inputs_visual.reshape(inputs_visual.shape[0]*inputs_visual.shape[1], inputs_visual.shape[2], inputs_visual.shape[3], inputs_visual.shape[4])
         
@@ -105,8 +106,4 @@ def val_epoch_multimodal(EEGDataLoader_val, epoch, data_loader, model, criterion
 
     return losses_avarage.avg.item(), prec1_avarage.avg.item()
 
-def val_epoch(EEGDataLoader_val, epoch, data_loader, model, criterion, opt, logger, modality='both', dist=None):
-    print('validation at epoch {}'.format(epoch))
-    if opt.model == 'multimodalcnn':
-        return val_epoch_multimodal(EEGDataLoader_val, epoch, data_loader, model, criterion, opt, logger, modality, dist=dist)
     

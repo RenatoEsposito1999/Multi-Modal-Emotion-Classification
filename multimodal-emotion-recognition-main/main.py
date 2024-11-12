@@ -16,12 +16,12 @@ from model import generate_model
 import transforms 
 from dataset import get_training_set, get_validation_set, get_test_set
 from utils import Logger, adjust_learning_rate, save_checkpoint
-from train import train_epoch
-from validation import val_epoch
+from train import train_epoch_multimodal
+from validation import val_epoch_multimodal
 import time
 
 from SimulatedDataset import SimulatedEEGDataset
-from models.EEGTransformer import EEGCNNTransformerEncoder
+
 
 if __name__ == '__main__':
     opt = parse_opts()
@@ -33,7 +33,6 @@ if __name__ == '__main__':
 
     pretrained = opt.pretrain_path != 'None'    
     
-    #opt.result_path = 'res_'+str(time.time())
     if not os.path.exists(opt.result_path):
         os.makedirs(opt.result_path)
         
@@ -46,22 +45,16 @@ if __name__ == '__main__':
    
             
     for fold in range(n_folds):
-        #if opt.dataset == 'RAVDESS':
-        #    opt.annotation_path = '/lustre/scratch/chumache/ravdess-develop/annotations_croppad_fold'+str(fold+1)+'.txt'
-
         print(opt)
-        with open(os.path.join(opt.result_path, 'opts'+str(time.time())+str(fold)+'.json'), 'w') as opt_file:
-            json.dump(vars(opt), opt_file)
-            
+
         torch.manual_seed(opt.manual_seed)
         model, parameters = generate_model(opt)
         
-        '''EEGModel = EEGCNNTransformerEncoder()
-        EEGModel = EEGModel.to(opt.device)'''
-
+        #Define loss for training
         criterion = nn.CrossEntropyLoss()
         criterion = criterion.to(opt.device)
         
+        #Training Phase
         if not opt.no_train:
             
             video_transform = transforms.Compose([
@@ -93,7 +86,6 @@ if __name__ == '__main__':
                 os.path.join(opt.result_path, 'train_batch'+str(fold)+'.log'),
                 ['epoch', 'batch', 'iter', 'loss', 'prec1', 'lr'])
             
-
             optimizer = optim.SGD(
                 parameters,
                 lr=opt.learning_rate,
@@ -101,9 +93,11 @@ if __name__ == '__main__':
                 dampening=opt.dampening,
                 weight_decay=opt.weight_decay,
                 nesterov=False)
+            
             scheduler = lr_scheduler.ReduceLROnPlateau(
                 optimizer, 'min', patience=opt.lr_patience)
-            
+        
+        #Validation Phase
         if not opt.no_val:
             video_transform = transforms.Compose([
                 transforms.ToTensor(opt.video_norm_value)])     
@@ -140,11 +134,11 @@ if __name__ == '__main__':
             opt.begin_epoch = checkpoint['epoch']
             model.load_state_dict(checkpoint['state_dict'])
 
+        #Start training and validation
         for i in range(opt.begin_epoch, opt.n_epochs + 1):
-
             if not opt.no_train:
                 adjust_learning_rate(optimizer, i, opt)
-                train_epoch(i, train_loader, model, criterion, optimizer, opt,
+                train_epoch_multimodal(i, train_loader, model, criterion, optimizer, opt,
                             train_logger, train_batch_logger, EEGDataLoader_train)
                 state = {
                     'epoch': i,
@@ -153,11 +147,11 @@ if __name__ == '__main__':
                     'optimizer': optimizer.state_dict(),
                     'best_prec1': best_prec1
                     }
-                save_checkpoint(state, False, opt, fold)
+                save_checkpoint(state, False, opt, fold, train=True)
             
             if not opt.no_val:
                 
-                validation_loss, prec1 = val_epoch(EEGDataLoader_val, i, val_loader, model, criterion, opt,
+                validation_loss, prec1 = val_epoch_multimodal(EEGDataLoader_val, i, val_loader, model, criterion, opt,
                                             val_logger)
                 is_best = prec1 > best_prec1
                 best_prec1 = max(prec1, best_prec1)
@@ -169,9 +163,9 @@ if __name__ == '__main__':
                 'best_prec1': best_prec1
                 }
                
-                save_checkpoint(state, is_best, opt, fold)
+                save_checkpoint(state, is_best, opt, fold, train=False)
 
-               
+        # Testing Phase       
         if opt.test:
 
             test_logger = Logger(
@@ -183,8 +177,8 @@ if __name__ == '__main__':
             test_data = get_test_set(opt, spatial_transform=video_transform) 
         
             #load best model
-            #best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name)+str(fold)+'.pth')
-            best_state = torch.load('c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/lt_1head_moddrop_2.pth', map_location=torch.device('cpu'))
+            best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name)+str(fold)+'.pth')
+            #best_state = torch.load('c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/lt_1head_moddrop_2.pth', map_location=torch.device('cpu'))
             model.load_state_dict(best_state['state_dict'])
         
             test_loader = torch.utils.data.DataLoader(
@@ -194,8 +188,15 @@ if __name__ == '__main__':
                 num_workers=opt.n_threads,
                 pin_memory=True)
             
-            test_loss, test_prec1 = val_epoch(10000, test_loader, model, criterion, opt,
-                                            test_logger)
+            EEGDataLoader_test = torch.utils.data.DataLoader(
+                EEGDataset_testing,
+                batch_size=opt.batch_size,
+                shuffle=True,
+                num_workers=opt.n_threads,
+                pin_memory=True
+            )
+            
+            test_loss, test_prec1 = val_epoch_multimodal(EEGDataLoader_test, 100, test_loader, model, criterion, opt, test_logger)
             
             with open(os.path.join(opt.result_path, 'test_set_bestval'+str(fold)+'.txt'), 'a') as f:
                     f.write('Prec1: ' + str(test_prec1) + '; Loss: ' + str(test_loss))
