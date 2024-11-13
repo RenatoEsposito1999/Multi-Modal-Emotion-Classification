@@ -21,6 +21,7 @@ from validation import val_epoch_multimodal
 import time
 
 from SimulatedDataset import SimulatedEEGDataset
+from training_preprocessing.eeg_preprocessing import EEGDataset
 
 
 if __name__ == '__main__':
@@ -39,10 +40,14 @@ if __name__ == '__main__':
     opt.arch = '{}'.format(opt.model)  
     opt.store_name = '_'.join([opt.dataset, opt.model, str(opt.sample_duration)])
     
-    EEGDataset_train = SimulatedEEGDataset(num_samples=1920)
+    '''EEGDataset_train = SimulatedEEGDataset(num_samples=1920)
     EEGDataset_validation = SimulatedEEGDataset(num_samples=480)
-    EEGDataset_testing = SimulatedEEGDataset(num_samples=480)
-   
+    EEGDataset_testing = SimulatedEEGDataset(num_samples=480)'''
+    
+    EEGDataset_train = EEGDataset(path="C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data/1/")
+    EEGDataset_validation = EEGDataset(path="C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data/2/")
+    EEGDataset_testing = EEGDataset(path="C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data/3/")
+    
             
     for fold in range(n_folds):
         print(opt)

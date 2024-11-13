@@ -17,9 +17,10 @@ class SimulatedEEGDataset(Dataset):
         data = []
         labels = []
         
+        
         for i in range(self.num_samples):
             # Simulate a class label for each sample
-            label = np.random.randint(0, self.num_classes-1)
+            label = np.random.randint(0, self.num_classes)
             
             # Generate base frequency component based on class label
             freq = (label + 1) * 0.1  # Frequency differs per class
@@ -40,9 +41,13 @@ class SimulatedEEGDataset(Dataset):
         data = np.stack(data)  # Shape: (num_samples, sequence_length, num_channels)
         labels = np.array(labels)  # Shape: (num_samples,)
         
+        print("Data: ", data.shape)
+        print("Lables: ", labels.shape)
+        
         # Convert to PyTorch tensors
         data = torch.tensor(data, dtype=torch.float32)
         labels = torch.tensor(labels, dtype=torch.long)
+        
         
         return data, labels
 
@@ -51,3 +56,6 @@ class SimulatedEEGDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.data[idx], self.labels[idx]
+    
+
+x = SimulatedEEGDataset()
