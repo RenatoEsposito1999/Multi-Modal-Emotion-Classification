@@ -4,18 +4,19 @@ from torch.utils.data import Dataset, DataLoader
 from scipy.io import loadmat
 from scipy import interpolate
 import os
-#"C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data/1/1_20160518.mat"
+#path = "C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data/1/"
 
 label = [1,2,3,0,2,0,0,1,0,1,2,1,1,1,2,3,2,2,3,3,0,3,0,3]
 
 class EEGDataset(Dataset):
-    def __init__(self, num_samples=1000, sequence_length=128, num_channels=64, num_classes=4, noise_level=0.1, path=None):
+    def __init__(self, num_samples=1000, sequence_length=128, num_channels=62, num_classes=4, noise_level=0.1, path=None):
         self.num_samples = num_samples
         self.sequence_length = sequence_length
         self.num_channels = num_channels
         self.num_classes = num_classes
         self.noise_level = noise_level
         self.path = path
+        
         self.data, self.labels = self.preprocess()
         
     def preprocess(self):
@@ -46,13 +47,27 @@ class EEGDataset(Dataset):
         print(downsampled_data.T.shape)  # (62, 128)
         
         data = np.stack(data)  # Shape: (num_samples, sequence_length, num_channels)
-        labels = np.array(labels)  # Shape: (num_samples,)
+        labels = np.array(labels) # Shape: (num_samples,)
         
         print("Data: ", data.shape)
         print("Lables: ", labels.shape)
  
-        
+        data = torch.tensor(data, dtype=torch.float32)
+        labels = torch.tensor(labels, dtype=torch.long)
         return data, labels
+    
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, idx):
+        return self.data[idx], self.labels[idx]
+        
+        
+
+
+    
+    
+    
     
 
 

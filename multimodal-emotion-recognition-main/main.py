@@ -43,7 +43,13 @@ if __name__ == '__main__':
     '''EEGDataset_train = SimulatedEEGDataset(num_samples=1920)
     EEGDataset_validation = SimulatedEEGDataset(num_samples=480)
     EEGDataset_testing = SimulatedEEGDataset(num_samples=480)'''
-    
+    print("Creo il training set: ")
+    #Modificare il size del training, validation e testing del EEG:
+    #Traning = 756
+    #Validation = 216
+    #Testing = 108
+    #Fatto questo modificare il validation val_epoch_multimodal del main.
+    #Valutare se lasciare il contrastive
     EEGDataset_train = EEGDataset(path="C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data/1/")
     EEGDataset_validation = EEGDataset(path="C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data/2/")
     EEGDataset_testing = EEGDataset(path="C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data/3/")
@@ -68,6 +74,7 @@ if __name__ == '__main__':
                 transforms.ToTensor(opt.video_norm_value)])
         
             training_data = get_training_set(opt, spatial_transform=video_transform) 
+            print(len(training_data))
         
             train_loader = torch.utils.data.DataLoader(
                 training_data,
@@ -86,10 +93,10 @@ if __name__ == '__main__':
         
             train_logger = Logger(
                 os.path.join(opt.result_path, 'train'+str(fold)+'.log'),
-                ['epoch', 'loss', 'prec1', 'lr'])
+                ['epoch', 'loss', 'prec1_audio_video','prec1_eeg', 'lr'])
             train_batch_logger = Logger(
                 os.path.join(opt.result_path, 'train_batch'+str(fold)+'.log'),
-                ['epoch', 'batch', 'iter', 'loss', 'prec1', 'lr'])
+                ['epoch', 'batch', 'iter', 'loss', 'prec1_audio_video','prec1_eeg', 'lr'])
             
             optimizer = optim.SGD(
                 parameters,

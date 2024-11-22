@@ -19,16 +19,24 @@ class MultimodalTransformer(nn.Module):
 
         self.audio_preprocessing = AudioCNNPool(num_classes=num_classes)
         self.video_preprocessing = EfficientFaceTemporal([4, 8, 4], [29, 116, 232, 464, 1024], num_classes, seq_length)
-        self.EEG_preprocessing = EEGCNNPreprocessor(d_model=self.embeds_dim, num_channels=64, cnn_out_channels=self.embeds_dim)
+        self.EEG_preprocessing = EEGCNNPreprocessor(d_model=self.embeds_dim, num_channels=62, cnn_out_channels=self.embeds_dim)
 
         self.av = AttentionBlock(in_dim_k=self.input_dim_video, in_dim_q=self.input_dim_audio, out_dim=self.embeds_dim, num_heads=num_heads)
         self.va = AttentionBlock(in_dim_k=self.input_dim_audio, in_dim_q=self.input_dim_video, out_dim=self.embeds_dim, num_heads=num_heads)
 
         self.EEG_Transformer = EEGTransformerEncoder(d_model=self.embeds_dim,num_heads=num_heads,sequence_length=128)
 
-        self.classifier_1 = nn.Sequential(
-                    nn.Linear(self.embeds_dim*3, num_classes),
+        self.classifier_audio_video = nn.Sequential(
+                    nn.Linear(self.embeds_dim*2, num_classes),
                 )
+        
+        self.classifier_eeg= nn.Sequential(
+                    nn.Linear(self.embeds_dim, num_classes),
+                )
+        
+        self.softmax = nn.Softmax(dim=1)
+        
+        
         
     def forward(self,x_audio,x_visual,x_eeg):
 
@@ -50,8 +58,17 @@ class MultimodalTransformer(nn.Module):
         proj_x_eeg = self.EEG_preprocessing.forward(x_eeg)
         eeg_pooled = self.EEG_Transformer.forward(proj_x_eeg)
         
-        concat = torch.cat((audio_pooled, video_pooled,eeg_pooled), dim=-1)
+        concat_audio_video = torch.cat((audio_pooled, video_pooled), dim=-1)
         
-        classification = self.classifier_1(concat)
-
-        return audio_pooled,video_pooled,eeg_pooled,classification
+        classification_audio_video = self.classifier_audio_video(concat_audio_video)
+        
+        classification_eeg = self.classifier_eeg(eeg_pooled)
+        
+        w1 = 0.6
+        w2 = 0.4
+        
+        final_logits = classification_audio_video*w1 + classification_eeg*w2
+        
+        probabilities = self.softmax(final_logits)
+        
+        return audio_pooled,video_pooled,eeg_pooled,classification_audio_video, classification_eeg, probabilities

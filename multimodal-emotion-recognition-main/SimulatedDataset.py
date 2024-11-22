@@ -58,4 +58,4 @@ class SimulatedEEGDataset(Dataset):
         return self.data[idx], self.labels[idx]
     
 
-x = SimulatedEEGDataset()
+
