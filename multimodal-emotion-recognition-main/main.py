@@ -21,7 +21,8 @@ from validation import val_epoch_multimodal
 import time
 
 from SimulatedDataset import SimulatedEEGDataset
-from training_preprocessing.eeg_preprocessing import EEGDataset
+from training_preprocessing.eeg_preprocessing import EEGDataset,  create_dataset_from_file_npz, save_dataset_to_npz
+
 
 
 if __name__ == '__main__':
@@ -44,17 +45,41 @@ if __name__ == '__main__':
     EEGDataset_validation = SimulatedEEGDataset(num_samples=480)
     EEGDataset_testing = SimulatedEEGDataset(num_samples=480)'''
     print("Creo il training set: ")
+    
+    
     #Modificare il size del training, validation e testing del EEG:
     #Traning = 756
     #Validation = 216
     #Testing = 108
-    #Fatto questo modificare il validation val_epoch_multimodal del main.
     #Valutare se lasciare il contrastive
-    EEGDataset_train = EEGDataset(path="C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data/1/")
-    EEGDataset_validation = EEGDataset(path="C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data/2/")
-    EEGDataset_testing = EEGDataset(path="C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data/3/")
+    #Fatto questo modificare il validation val_epoch_multimodal del main.
+ 
     
+    # Specifica i nomi dei file CSV da cercare
+    required_files = ["EEGTrain.npz", "EEGVal.npz", "EEGTest.npz"]
+    
+    # Directory in cui cercare i file (usa la directory corrente se non specificato)
+    directory = "./"
+    
+    # Verifica se i file esistono
+    found_files = [file for file in required_files if os.path.exists(os.path.join(directory, file))]
+    
+    if len(found_files) == len(required_files):
+        print("OK")
+        EEGDataset_train = create_dataset_from_file_npz(required_files[0])
+        EEGDataset_val = create_dataset_from_file_npz(required_files[1])
+        EEGDataset_test = create_dataset_from_file_npz(required_files[2])
             
+    else:
+        EEGDataset_complete = EEGDataset(path="C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data")
+        EEGDataset_train, EEGDataset_val, EEGDataset_test = torch.utils.data.random_split(EEGDataset_complete, [756, 216, 108])
+        print(len(EEGDataset_train))
+        print(len(EEGDataset_val))
+        print(len(EEGDataset_test))
+        save_dataset_to_npz(EEGDataset_train, "./EEGTrain.npz")
+        save_dataset_to_npz(EEGDataset_val, "./EEGVal.npz")
+        save_dataset_to_npz(EEGDataset_test, "./EEGTest.npz")
+                      
     for fold in range(n_folds):
         print(opt)
 
@@ -124,7 +149,7 @@ if __name__ == '__main__':
                 pin_memory=True)
             
             EEGDataLoader_val = torch.utils.data.DataLoader(
-                EEGDataset_validation,
+                EEGDataset_val,
                 batch_size=opt.batch_size,
                 shuffle=False,
                 num_workers=opt.n_threads,
@@ -201,7 +226,7 @@ if __name__ == '__main__':
                 pin_memory=True)
             
             EEGDataLoader_test = torch.utils.data.DataLoader(
-                EEGDataset_testing,
+                EEGDataset_test,
                 batch_size=opt.batch_size,
                 shuffle=True,
                 num_workers=opt.n_threads,

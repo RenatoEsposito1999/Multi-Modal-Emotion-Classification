@@ -70,7 +70,7 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
 
         targets = Variable(targets)
         
-        audio_embeddings, video_embeddings, EEG_embeddigs, logits_audio_video, logits_eeg, probabilities = model(audio_inputs, visual_inputs, EEG_inputs)
+        audio_embeddings, video_embeddings, EEG_embeddigs, logits_audio_video, logits_eeg, output = model(audio_inputs, visual_inputs, EEG_inputs)
        
         loss_contrastive = contrastive_loss_fn(audio_embeddings, video_embeddings, EEG_embeddigs, targets, EEG_targets)
         
@@ -78,12 +78,12 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
         loss_eeg = criterion(logits_eeg, EEG_targets)
         
         total_loss = loss_audio_video + loss_eeg + loss_contrastive
-        #print(f"Loss_contrastive: {loss_contrastive}, loss_modello: {loss}, total_loss: {total_loss}")
+       
         
         prec1_audio_video = calculate_precision(logits_audio_video.data, targets.data)
         prec1_eeg = calculate_precision(logits_eeg.data, EEG_targets.data)
        
-        #prec1, prec5 = calculate_accuracy(outputs.data, targets.data, topk=(1,5))
+        
         losses_avarage.update(total_loss.data, opt.batch_size)
         prec1_audio_video_avarage.update(prec1_audio_video, opt.batch_size)
         prec1_eeg_avarage.update(prec1_eeg, opt.batch_size)
@@ -104,22 +104,22 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
             'prec1_eeg': prec1_eeg_avarage.val.item(),
             'lr': optimizer.param_groups[0]['lr']
         })
-        if i % 10 ==0:
-            print('Epoch: [{0}][{1}/{2}]\t lr: {lr:.5f}\t'
-                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                  'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Prec@1_av {prec1_audio_video_avarage.val:.5f} ({prec1_audio_video_avarage.avg:.5f})\t'
-                  'Prec@1_eeg {prec1_eeg_avarage.val:.5f} ({prec1_eeg_avarage.avg:.5f})\t'.format(
-                      epoch,
-                      i,
-                      len(data_loader),
-                      batch_time=batch_time,
-                      data_time=data_time,
-                      loss=losses_avarage,
-                      prec1_audio_video_avarage=prec1_audio_video_avarage,
-                      prec1_eeg_avarage = prec1_eeg_avarage,
-                      lr=optimizer.param_groups[0]['lr']))
+        #if i % 10 ==0:
+        print('Epoch: [{0}][{1}/{2}]\t lr: {lr:.5f}\t'
+                'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
+                'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                'Prec@1_av {prec1_audio_video_avarage.val:.5f} ({prec1_audio_video_avarage.avg:.5f})\t'
+                'Prec@1_eeg {prec1_eeg_avarage.val:.5f} ({prec1_eeg_avarage.avg:.5f})\t'.format(
+                    epoch,
+                    i,
+                    len(data_loader),
+                    batch_time=batch_time,
+                    data_time=data_time,
+                    loss=losses_avarage,
+                    prec1_audio_video_avarage=prec1_audio_video_avarage,
+                    prec1_eeg_avarage = prec1_eeg_avarage,
+                    lr=optimizer.param_groups[0]['lr']))
 
     epoch_logger.log({
         'epoch': epoch,
