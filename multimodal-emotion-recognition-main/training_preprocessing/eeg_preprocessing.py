@@ -77,7 +77,7 @@ def create_dataset_from_file_npz(file):
     features = data["features"]
     labels = data["labels"]
     features_tensor = torch.tensor(features, dtype=torch.float32)
-    labels_tensor = torch.tensor(labels, dtype=torch.float32)
+    labels_tensor = torch.tensor(labels, dtype=torch.long)
     return TensorDataset(features_tensor, labels_tensor)
 
 def save_dataset_to_npz(subset, save_path):

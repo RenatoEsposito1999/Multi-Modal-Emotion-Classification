@@ -67,28 +67,26 @@ class MultimodalTransformer(nn.Module):
         probabilities_audio_video = self.softmax(classification_audio_video)
         probabilities_eeg = self.softmax(classification_eeg)
         
-        print("ciao a tutti")
-        
         audio_video_confidence, audio_video_labels = torch.max(probabilities_audio_video, dim=1)
         eeg_confidence, eeg_labels = torch.max(probabilities_eeg, dim=1)
         
         th = 0.6
+        max_output = -1 * torch.ones(audio_video_labels.size(0))
         
-        #FARE IL CICLO FOR PER ITERARE NEL BATCHSIZE
-        #POI PASSARE ALLA VALIDATION 
-        if (audio_video_confidence > th and eeg_confidence > th):
-            if(audio_video_confidence > eeg_confidence):
-                max_output = audio_video_labels
+        for i in range(audio_video_confidence.size(0)):
+            if (audio_video_confidence[i] > th and eeg_confidence[i] > th):
+                if(audio_video_confidence[i] > eeg_confidence[i]):
+                    max_output[i] = audio_video_labels[i]
+                else:
+                    max_output[i] = eeg_labels[i]
+            elif(audio_video_confidence[i] > th):
+                max_output[i] = audio_video_labels[i]
+            elif(eeg_confidence[i] > th):
+                max_output[i] = eeg_labels[i]
+            elif(audio_video_confidence[i] > eeg_confidence[i]):
+                    max_output[i] = audio_video_labels[i]
             else:
-                max_output = eeg_labels
-        elif(audio_video_confidence > th):
-            max_output = audio_video_labels
-        elif(eeg_confidence > th):
-            max_output = eeg_labels
-        elif(audio_video_confidence > eeg_confidence):
-                max_output = audio_video_labels
-        else:
-                max_output = eeg_labels
+                    max_output[i] = eeg_labels[i]
         
             
         return audio_pooled,video_pooled,eeg_pooled,classification_audio_video, classification_eeg, max_output

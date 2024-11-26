@@ -156,18 +156,20 @@ if __name__ == '__main__':
                 pin_memory=True)
         
             val_logger = Logger(
-                    os.path.join(opt.result_path, 'val'+str(fold)+'.log'), ['epoch', 'loss', 'prec1'])
+                    os.path.join(opt.result_path, 'val'+str(fold)+'.log'), ['epoch', 'loss', 'prec1_audio_video','prec1_eeg'])
             test_logger = Logger(
-                    os.path.join(opt.result_path, 'test'+str(fold)+'.log'), ['epoch', 'loss', 'prec1'])
+                    os.path.join(opt.result_path, 'test'+str(fold)+'.log'), ['epoch', 'loss', 'prec1_audio_video','prec1_eeg'])
 
             
-        best_prec1 = 0
+        best_prec1_audio_video = 0
+        best_prec1_eeg = 0
         best_loss = 1e10
         if opt.resume_path:
             print('loading checkpoint {}'.format(opt.resume_path))
             checkpoint = torch.load(opt.resume_path)
             assert opt.arch == checkpoint['arch']
-            best_prec1 = checkpoint['best_prec1']
+            best_prec1_audio_video = checkpoint['best_prec1_audio_video']
+            best_prec1_eeg = checkpoint['best_prec1_eeg']
             opt.begin_epoch = checkpoint['epoch']
             model.load_state_dict(checkpoint['state_dict'])
 
@@ -182,22 +184,25 @@ if __name__ == '__main__':
                     'arch': opt.arch,
                     'state_dict': model.state_dict(),
                     'optimizer': optimizer.state_dict(),
-                    'best_prec1': best_prec1
+                    'best_prec1_audio_video': best_prec1_audio_video,
+                    'best_prec1_eeg': best_prec1_eeg
                     }
                 save_checkpoint(state, False, opt, fold, train=True)
             
             if not opt.no_val:
                 
-                validation_loss, prec1 = val_epoch_multimodal(EEGDataLoader_val, i, val_loader, model, criterion, opt,
+                validation_loss, prec1_audio_video, prec1_eeg = val_epoch_multimodal(EEGDataLoader_val, i, val_loader, model, criterion, opt,
                                             val_logger)
-                is_best = prec1 > best_prec1
-                best_prec1 = max(prec1, best_prec1)
+                is_best = prec1_audio_video > best_prec1_audio_video and prec1_eeg > best_prec1_eeg
+                best_prec1_audio_video = max(prec1_audio_video, best_prec1_audio_video)
+                best_prec1_eeg = max(prec1_eeg, best_prec1_eeg)
                 state = {
                 'epoch': i,
                 'arch': opt.arch,
                 'state_dict': model.state_dict(),
                 'optimizer': optimizer.state_dict(),
-                'best_prec1': best_prec1
+                'best_prec1_audio_video': best_prec1_audio_video,
+                'best_prec1_eeg': best_prec1_eeg
                 }
                
                 save_checkpoint(state, is_best, opt, fold, train=False)
@@ -206,7 +211,7 @@ if __name__ == '__main__':
         if opt.test:
 
             test_logger = Logger(
-                    os.path.join(opt.result_path, 'test'+str(fold)+'.log'), ['epoch', 'loss', 'prec1'])
+                    os.path.join(opt.result_path, 'test'+str(fold)+'.log'), ['epoch', 'loss', 'prec1_audio_video','prec1_eeg'])
 
             video_transform = transforms.Compose([
                 transforms.ToTensor(opt.video_norm_value)])
@@ -233,12 +238,7 @@ if __name__ == '__main__':
                 pin_memory=True
             )
             
-            test_loss, test_prec1 = val_epoch_multimodal(EEGDataLoader_test, 100, test_loader, model, criterion, opt, test_logger)
+            test_loss, test_prec1_audio_video, test_prec1_eeg = val_epoch_multimodal(EEGDataLoader_test, 100, test_loader, model, criterion, opt, test_logger)
             
             with open(os.path.join(opt.result_path, 'test_set_bestval'+str(fold)+'.txt'), 'a') as f:
-                    f.write('Prec1: ' + str(test_prec1) + '; Loss: ' + str(test_loss))
-            test_accuracies.append(test_prec1) 
-                
-            
-    with open(os.path.join(opt.result_path, 'test_set_bestval.txt'), 'a') as f:
-        f.write('Prec1: ' + str(np.mean(np.array(test_accuracies))) +'+'+str(np.std(np.array(test_accuracies))) + '\n')
+                    f.write('Prec1_audio_video: ' + str(test_prec1_audio_video)+ '; Prec1_eeg: ' + str(test_prec1_eeg) + '; Loss: ' + str(test_loss))

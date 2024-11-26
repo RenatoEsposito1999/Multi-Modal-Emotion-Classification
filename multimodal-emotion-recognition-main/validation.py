@@ -17,21 +17,27 @@ def val_epoch_multimodal(EEGDataLoader_val, epoch, data_loader, model, criterion
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses_avarage = AverageMeter()
-    prec1_avarage = AverageMeter()
+    prec1_audio_video_avarage = AverageMeter()
+    prec1_eeg_avarage = AverageMeter()
    
-
+    contrastive_loss_fn = SupervisedContrastiveLoss(temperature=0.5)
     end_time = time.time()
+    
+    
     for i, (item1, item2) in enumerate(zip(data_loader, EEGDataLoader_val)):
+      
         data_time.update(time.time() - end_time)
         
         inputs_audio, inputs_visual, targets = item1
         
         EEG_inputs, EEG_targets = item2
+     
         targets = targets.to(opt.device)
         EEG_inputs = EEG_inputs.to(opt.device)
         EEG_targets = EEG_targets.to(opt.device)
+      
         
-        contrastive_loss_fn = SupervisedContrastiveLoss(temperature=0.5)
+        
 
         '''if modality == 'audio':
             print('Skipping video modality')
@@ -68,20 +74,24 @@ def val_epoch_multimodal(EEGDataLoader_val, epoch, data_loader, model, criterion
             EEG_targets = Variable(EEG_targets)
             
         
-        audio_embeddings, video_embeddings,EEG_embeddigs, outputs = model(inputs_audio, inputs_visual, EEG_inputs)
+        audio_embeddings, video_embeddings, EEG_embeddigs, logits_audio_video, logits_eeg, output  = model(inputs_audio, inputs_visual, EEG_inputs)
         
-        loss_contrastive = contrastive_loss_fn(audio_embeddings, video_embeddings, EEG_embeddigs, targets, EEG_targets)
+        #loss_contrastive = contrastive_loss_fn(audio_embeddings, video_embeddings, EEG_embeddigs, targets, EEG_targets)
         
-        loss = criterion(outputs, targets)
         
-        total_loss = loss + loss_contrastive
+        loss_audio_video = criterion(logits_audio_video, targets)
+        loss_eeg = criterion(logits_eeg, EEG_targets)
+        
+        total_loss = loss_audio_video + loss_eeg #+ loss_contrastive
         
          
-        prec1 = calculate_precision(outputs.data, targets.data)
+        prec1_audio_video = calculate_precision(logits_audio_video.data, targets.data)
+        prec1_eeg = calculate_precision(logits_eeg.data, EEG_targets.data)
        
-        #prec1, prec5 = calculate_accuracy(outputs.data, targets.data, topk=(1,5))
-        losses_avarage.update(total_loss.data, inputs_audio.size(0))
-        prec1_avarage.update(prec1, inputs_audio.size(0))
+        
+        losses_avarage.update(total_loss.data, opt.batch_size)
+        prec1_audio_video_avarage.update(prec1_audio_video, opt.batch_size)
+        prec1_eeg_avarage.update(prec1_eeg, opt.batch_size)
 
 
         batch_time.update(time.time() - end_time)
@@ -91,19 +101,22 @@ def val_epoch_multimodal(EEGDataLoader_val, epoch, data_loader, model, criterion
               'Time {batch_time.val:.5f} ({batch_time.avg:.5f})\t'
               'Data {data_time.val:.5f} ({data_time.avg:.5f})\t'
               'Loss {loss}\t'
-              'Prec@1 {prec1_avarage.val:.5f} ({prec1_avarage.avg:.5f})\t'.format(
+              'Prec@1_audio_video {prec1_audio_video_avarage.val:.5f} ({prec1_audio_video_avarage.avg:.5f})\t'
+              'Prec@1_eeg {prec1_eeg_avarage.val:.5f} ({prec1_eeg_avarage.avg:.5f})\t'.format(
                   epoch,
                   i + 1,
                   len(data_loader),
                   batch_time=batch_time,
                   data_time=data_time,
                   loss=total_loss,
-                  prec1_avarage=prec1_avarage))
+                  prec1_audio_video_avarage=prec1_audio_video_avarage,
+                  prec1_eeg_avarage=prec1_eeg_avarage))
 
     logger.log({'epoch': epoch,
                 'loss': losses_avarage.avg.item(),
-                'prec1': prec1_avarage.avg.item()})
+                'prec1_audio_video': prec1_audio_video_avarage.avg.item(),
+                'prec1_eeg': prec1_eeg_avarage.avg.item()})
 
-    return losses_avarage.avg.item(), prec1_avarage.avg.item()
+    return losses_avarage.avg.item(), prec1_audio_video_avarage.avg.item(), prec1_eeg_avarage.avg.item()
 
     
