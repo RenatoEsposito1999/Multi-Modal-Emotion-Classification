@@ -79,6 +79,7 @@ if __name__ == '__main__':
         save_dataset_to_npz(EEGDataset_train, "./EEGTrain.npz")
         save_dataset_to_npz(EEGDataset_val, "./EEGVal.npz")
         save_dataset_to_npz(EEGDataset_test, "./EEGTest.npz")
+    
                       
     for fold in range(n_folds):
         print(opt)

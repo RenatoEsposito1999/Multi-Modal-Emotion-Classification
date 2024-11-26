@@ -9,6 +9,7 @@ import os
 label_1 = [1,2,3,0,2,0,0,1,0,1,2,1,1,1,2,3,2,2,3,3,0,3,0,3]
 label_2 = [2,1,3,0,0,2,0,2,3,3,2,3,2,0,1,1,2,1,0,3,0,1,3,1]
 label_3 = [1,2,2,1,3,3,3,1,1,2,1,0,2,3,3,0,2,3,0,0,2,0,1,0]
+channels_epoc_plus = [3,4,5,7,11,13,15,21,23,31,41,49,58,60]
 
 class EEGDataset(Dataset):
     def __init__(self, num_samples=1000, sequence_length=128, num_channels=62, num_classes=4, noise_level=0.1, path=None):
@@ -20,6 +21,8 @@ class EEGDataset(Dataset):
         self.path = path
         
         self.data, self.labels = self.preprocess()
+        
+        
         
     def preprocess(self):
         data = []
@@ -37,24 +40,28 @@ class EEGDataset(Dataset):
                     if file.endswith(".mat"):
                         datamat = loadmat(self.path + "/" + folder + "/" + file)
                         index = 0
+                        
                         for key in datamat:
                             if not key.startswith('__'):
                                 tmp = datamat[key]
                                 # Inizializza l'array di output
-                                downsampled_data = np.zeros((tmp.shape[0], self.sequence_length))
+                                downsampled_data = np.zeros((14, self.sequence_length))
+                                idx = -1
                                 for i in range(tmp.shape[0]):
-                                    # Genera gli indici originali e quelli target
-                                    original_indices = np.linspace(0, 1, tmp.shape[1])
-                                    target_indices = np.linspace(0, 1, self.sequence_length)
-                                    # Crea la funzione di interpolazione e applicala agli indici target
-                                    interp_func = interpolate.interp1d(original_indices, tmp[i], kind='linear')
-                                    downsampled_data[i] = interp_func(target_indices)
+                                    if i in channels_epoc_plus:
+                                        idx = idx + 1
+                                        # Genera gli indici originali e quelli target
+                                        original_indices = np.linspace(0, 1, tmp.shape[1])
+                                        target_indices = np.linspace(0, 1, self.sequence_length)
+                                        # Crea la funzione di interpolazione e applicala agli indici target
+                                        interp_func = interpolate.interp1d(original_indices, tmp[i], kind='linear')
+                                        downsampled_data[idx] = interp_func(target_indices)
                                 
                                 labels.append(label[index])
                                 data.append(downsampled_data.T)
                                 index += 1
                 
-        print(downsampled_data.T.shape)  # (62, 128)
+        print(downsampled_data.T.shape)  # (128,14)
         
         data = np.stack(data)  # Shape: (num_samples, sequence_length, num_channels)
         labels = np.array(labels) # Shape: (num_samples,)

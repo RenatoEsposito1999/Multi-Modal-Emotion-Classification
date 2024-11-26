@@ -9,17 +9,18 @@ from Multimodal_transformer.Transformers.Transformer_funcs import EEGTransformer
 from Multimodal_transformer.Transformers.Transformer_funcs import AttentionBlock
 
 class MultimodalTransformer(nn.Module):
-    def __init__(self,num_classes=4,seq_length=15,pretr_ef='None',num_heads=1):
+    def __init__(self,num_classes=4,seq_length=15,num_channels_eeg=14,pretr_ef='None',num_heads=1):
         super(MultimodalTransformer,self).__init__()
 
         self.embeds_dim = 128
         self.input_dim_video = 128
         self.input_dim_audio = 128
         self.input_dim_eeg = 128
+        self.num_channels_eeg = num_channels_eeg
 
         self.audio_preprocessing = AudioCNNPool(num_classes=num_classes)
         self.video_preprocessing = EfficientFaceTemporal([4, 8, 4], [29, 116, 232, 464, 1024], num_classes, seq_length)
-        self.EEG_preprocessing = EEGCNNPreprocessor(d_model=self.embeds_dim, num_channels=62, cnn_out_channels=self.embeds_dim)
+        self.EEG_preprocessing = EEGCNNPreprocessor(d_model=self.embeds_dim, num_channels=self.num_channels_eeg, cnn_out_channels=self.embeds_dim)
 
         self.av = AttentionBlock(in_dim_k=self.input_dim_video, in_dim_q=self.input_dim_audio, out_dim=self.embeds_dim, num_heads=num_heads)
         self.va = AttentionBlock(in_dim_k=self.input_dim_audio, in_dim_q=self.input_dim_video, out_dim=self.embeds_dim, num_heads=num_heads)

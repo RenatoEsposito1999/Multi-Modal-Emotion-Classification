@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class EEGCNNPreprocessor(nn.Module):
-    def __init__(self, num_channels=62, d_model=128, num_heads=8, num_layers=4, sequence_length=256, cnn_out_channels=32):
+    def __init__(self, num_channels=14, d_model=128, num_heads=8, num_layers=4, sequence_length=256, cnn_out_channels=32):
         super(EEGCNNPreprocessor, self).__init__()
         
         self.input_channels = num_channels
