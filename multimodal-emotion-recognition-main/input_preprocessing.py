@@ -129,7 +129,7 @@ def preprocess_frame(frame, input_size=(224, 224), video_norm_value=None):
     
     return video_transform(frame)
 
-def predict_single_video(data_path, video_norm_value=None, batch_size=1):
+def preprocessing_sync_source(data_path, video_norm_value=None, batch_size=1):
     video_npy = Video_preprocessing(data_path).process()
     audio_npy,sr = Audio_preprocessing(data_path).process()
     
@@ -156,3 +156,15 @@ def predict_single_video(data_path, video_norm_value=None, batch_size=1):
         video_var = video_var.permute(0,2,1,3,4)
         video_var = video_var.reshape(video_var.shape[0]*video_var.shape[1], video_var.shape[2], video_var.shape[3], video_var.shape[4])
         return audio_var,video_var
+    
+
+def preprocessing_async_source(path, batch_size=1):      
+        data = np.load(path)
+        features = data["features"]
+        labels = data["labels"]
+        features_tensor = torch.tensor(features, dtype=torch.float32)
+        labels_tensor = torch.tensor(labels, dtype=torch.long)
+        idx = np.random.randint(features_tensor.shape[0])
+        features_tensor = features_tensor[idx,:,:]
+        features_tensor = features_tensor.unsqueeze(0).expand(1, -1, -1)
+        return features_tensor, labels_tensor[idx]

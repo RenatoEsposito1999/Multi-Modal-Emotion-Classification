@@ -51,10 +51,7 @@ if __name__ == '__main__':
     #Traning = 756
     #Validation = 216
     #Testing = 108
-    #Valutare se lasciare il contrastive
-    #Fatto questo modificare il validation val_epoch_multimodal del main.
- 
-    
+   
     # Specifica i nomi dei file CSV da cercare
     required_files = ["EEGTrain.npz", "EEGVal.npz", "EEGTest.npz"]
     
@@ -100,6 +97,7 @@ if __name__ == '__main__':
                 transforms.ToTensor(opt.video_norm_value)])
         
             training_data = get_training_set(opt, spatial_transform=video_transform) 
+            
             print(len(training_data))
         
             train_loader = torch.utils.data.DataLoader(
@@ -124,13 +122,23 @@ if __name__ == '__main__':
                 os.path.join(opt.result_path, 'train_batch'+str(fold)+'.log'),
                 ['epoch', 'batch', 'iter', 'loss', 'prec1_audio_video','prec1_eeg', 'lr'])
             
-            optimizer = optim.SGD(
+            '''optimizer = optim.SGD(
                 parameters,
                 lr=opt.learning_rate,
                 momentum=opt.momentum,
                 dampening=opt.dampening,
                 weight_decay=opt.weight_decay,
-                nesterov=False)
+                nesterov=False)'''
+            
+            optimizer = optim.Adam(
+                            parameters,
+                            lr=opt.learning_rate,
+                            betas=(0.9, 0.98),
+                            eps=1e-9,
+                            weight_decay=opt.weight_decay,
+                            amsgrad=True
+                        )
+ 
             
             scheduler = lr_scheduler.ReduceLROnPlateau(
                 optimizer, 'min', patience=opt.lr_patience)
@@ -177,7 +185,7 @@ if __name__ == '__main__':
         #Start training and validation
         for i in range(opt.begin_epoch, opt.n_epochs + 1):
             if not opt.no_train:
-                adjust_learning_rate(optimizer, i, opt)
+                #adjust_learning_rate(optimizer, i, opt)
                 train_epoch_multimodal(i, train_loader, model, criterion, optimizer, opt,
                             train_logger, train_batch_logger, EEGDataLoader_train)
                 state = {

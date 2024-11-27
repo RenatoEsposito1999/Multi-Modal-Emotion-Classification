@@ -164,3 +164,7 @@ dataset/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 .DS_Store
+
+
+#Annotations txt
+training_processing/annotations.txt

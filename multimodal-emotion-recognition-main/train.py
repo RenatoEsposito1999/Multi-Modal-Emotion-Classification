@@ -72,12 +72,12 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
         
         audio_embeddings, video_embeddings, EEG_embeddigs, logits_audio_video, logits_eeg, output = model(audio_inputs, visual_inputs, EEG_inputs)
        
-        #loss_contrastive = contrastive_loss_fn(audio_embeddings, video_embeddings, EEG_embeddigs, targets, EEG_targets)
+        loss_contrastive = contrastive_loss_fn(audio_embeddings, video_embeddings, EEG_embeddigs, targets, EEG_targets)
         
         loss_audio_video = criterion(logits_audio_video, targets)
         loss_eeg = criterion(logits_eeg, EEG_targets)
         
-        total_loss = loss_audio_video + loss_eeg #+ loss_contrastive
+        total_loss = loss_audio_video + loss_eeg + loss_contrastive
        
         
         prec1_audio_video = calculate_precision(logits_audio_video.data, targets.data)

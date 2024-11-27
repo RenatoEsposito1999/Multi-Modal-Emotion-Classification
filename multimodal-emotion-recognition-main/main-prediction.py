@@ -15,21 +15,16 @@ if __name__ == '__main__':
     model.to(opt.device)
 
     #PROBLEMA: SU MAC vuole cuda e il modello non funziona senza cuda questa cosa va sistemata forse nel trainig. 
-    best_state = torch.load('c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/lt_1head_moddrop_2.pth')
+    best_state = torch.load('c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/results/RAVDESS_multimodalcnn_15_best0.pth')
     model.load_state_dict(best_state['state_dict'])
     
-    input_path="c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/raw_data/angry_wrong_1.mp4"
-    audio_var, video_var = preprocessing.predict_single_video(input_path,video_norm_value=opt.video_norm_value, batch_size=opt.batch_size)
+    video_audio_path="c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/raw_data/happy_wrong_without_audio.mp4"
+    eeg_path="c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/EEGTest.npz"
+    audio_var, video_var = preprocessing.preprocessing_sync_source(video_audio_path,video_norm_value=opt.video_norm_value, batch_size=1)
+    eeg_var, eeg_label = preprocessing.preprocessing_async_source(eeg_path, batch_size=1)
     with torch.no_grad():
-        output = model(x_audio=audio_var, x_visual=video_var)
+        _ ,_ ,_ ,_ ,_ , output = model(x_audio=audio_var, x_visual=video_var, x_eeg=eeg_var)
     print("[LOGITS] Output: ", output)
-    # Calcola le probabilità con softmax
-    '''probabilities = F.softmax(output, dim=1)
-    percentages = probabilities*100
-    percentages = percentages.detach().numpy().flatten()
-    # Converti in percentuali
-    result = output.argmax(1)
-    for i, p in enumerate(percentages):
-        print(f"Classe {emotion_dict[i]}: {p:.4f}%")
-    print("Prediction: ",emotion_dict[result])'''
+    print("Label eeg: ", eeg_label)
+    
     
