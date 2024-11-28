@@ -27,12 +27,8 @@ class MultimodalTransformer(nn.Module):
 
         self.EEG_Transformer = EEGTransformerEncoder(d_model=self.embeds_dim,num_heads=num_heads,sequence_length=128)
 
-        self.classifier_audio_video = nn.Sequential(
-                    nn.Linear(self.embeds_dim*2, num_classes),
-                )
-        
-        self.classifier_eeg= nn.Sequential(
-                    nn.Linear(self.embeds_dim, num_classes),
+        self.classifier = nn.Sequential(
+                    nn.Linear(self.embeds_dim*3, num_classes),
                 )
         
         self.softmax = nn.Softmax(dim=1)
@@ -59,35 +55,9 @@ class MultimodalTransformer(nn.Module):
         proj_x_eeg = self.EEG_preprocessing.forward(x_eeg)
         eeg_pooled = self.EEG_Transformer.forward(proj_x_eeg)
         
-        concat_audio_video = torch.cat((audio_pooled, video_pooled), dim=-1)
+        concat_audio_video_eeg = torch.cat((audio_pooled, video_pooled, eeg_pooled), dim=-1)
         
-        classification_audio_video = self.classifier_audio_video(concat_audio_video)
+        logits_output = self.classifier(concat_audio_video_eeg)
         
-        classification_eeg = self.classifier_eeg(eeg_pooled)
-        
-        probabilities_audio_video = self.softmax(classification_audio_video)
-        probabilities_eeg = self.softmax(classification_eeg)
-        
-        audio_video_confidence, audio_video_labels = torch.max(probabilities_audio_video, dim=1)
-        eeg_confidence, eeg_labels = torch.max(probabilities_eeg, dim=1)
-        
-        th = 0.6
-        max_output = -1 * torch.ones(audio_video_labels.size(0))
-        
-        for i in range(audio_video_confidence.size(0)):
-            if (audio_video_confidence[i] > th and eeg_confidence[i] > th):
-                if(audio_video_confidence[i] > eeg_confidence[i]):
-                    max_output[i] = audio_video_labels[i]
-                else:
-                    max_output[i] = eeg_labels[i]
-            elif(audio_video_confidence[i] > th):
-                max_output[i] = audio_video_labels[i]
-            elif(eeg_confidence[i] > th):
-                max_output[i] = eeg_labels[i]
-            elif(audio_video_confidence[i] > eeg_confidence[i]):
-                    max_output[i] = audio_video_labels[i]
-            else:
-                    max_output[i] = eeg_labels[i]
-        
-            
-        return audio_pooled,video_pooled,eeg_pooled,classification_audio_video, classification_eeg, max_output
+              
+        return logits_output

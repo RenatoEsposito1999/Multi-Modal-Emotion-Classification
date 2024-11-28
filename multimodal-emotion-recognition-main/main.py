@@ -22,6 +22,7 @@ import time
 
 from SimulatedDataset import SimulatedEEGDataset
 from training_preprocessing.eeg_preprocessing import EEGDataset,  create_dataset_from_file_npz, save_dataset_to_npz
+from training_preprocessing.synchronized_data import Synchronized_data
 
 
 
@@ -107,20 +108,14 @@ if __name__ == '__main__':
                 num_workers=opt.n_threads,
                 pin_memory=True)
             
-            EEGDataLoader_train = torch.utils.data.DataLoader(
-                EEGDataset_train,
-                batch_size=opt.batch_size,
-                shuffle=True,
-                num_workers=opt.n_threads,
-                pin_memory=True
-             )
+            EEGData_train = Synchronized_data(EEGDataset_train)
         
             train_logger = Logger(
                 os.path.join(opt.result_path, 'train'+str(fold)+'.log'),
-                ['epoch', 'loss', 'prec1_audio_video','prec1_eeg', 'lr'])
+                ['epoch', 'loss', 'prec1', 'lr'])
             train_batch_logger = Logger(
                 os.path.join(opt.result_path, 'train_batch'+str(fold)+'.log'),
-                ['epoch', 'batch', 'iter', 'loss', 'prec1_audio_video','prec1_eeg', 'lr'])
+                ['epoch', 'batch', 'iter', 'loss', 'prec1', 'lr'])
             
             '''optimizer = optim.SGD(
                 parameters,
@@ -140,8 +135,10 @@ if __name__ == '__main__':
                         )
  
             
-            scheduler = lr_scheduler.ReduceLROnPlateau(
-                optimizer, 'min', patience=opt.lr_patience)
+            '''scheduler = lr_scheduler.ReduceLROnPlateau(
+                optimizer, 'min', patience=opt.lr_patience)'''
+                
+            scheduler = lr_scheduler.StepLR(optimizer, 20, 0.1)
         
         #Validation Phase
         if not opt.no_val:
@@ -157,21 +154,15 @@ if __name__ == '__main__':
                 num_workers=opt.n_threads,
                 pin_memory=True)
             
-            EEGDataLoader_val = torch.utils.data.DataLoader(
-                EEGDataset_val,
-                batch_size=opt.batch_size,
-                shuffle=False,
-                num_workers=opt.n_threads,
-                pin_memory=True)
+            EEGData_val = Synchronized_data(EEGDataset_val)
         
             val_logger = Logger(
-                    os.path.join(opt.result_path, 'val'+str(fold)+'.log'), ['epoch', 'loss', 'prec1_audio_video','prec1_eeg'])
+                    os.path.join(opt.result_path, 'val'+str(fold)+'.log'), ['epoch', 'loss', 'prec1'])
             test_logger = Logger(
-                    os.path.join(opt.result_path, 'test'+str(fold)+'.log'), ['epoch', 'loss', 'prec1_audio_video','prec1_eeg'])
+                    os.path.join(opt.result_path, 'test'+str(fold)+'.log'), ['epoch', 'loss', 'prec1'])
 
             
-        best_prec1_audio_video = 0
-        best_prec1_eeg = 0
+        best_prec1 = 0
         best_loss = 1e10
         if opt.resume_path:
             print('loading checkpoint {}'.format(opt.resume_path))
@@ -186,32 +177,30 @@ if __name__ == '__main__':
         for i in range(opt.begin_epoch, opt.n_epochs + 1):
             if not opt.no_train:
                 #adjust_learning_rate(optimizer, i, opt)
-                train_epoch_multimodal(i, train_loader, model, criterion, optimizer, opt,
-                            train_logger, train_batch_logger, EEGDataLoader_train)
+                train_epoch_multimodal(i, train_loader, model, criterion, optimizer, scheduler, opt,
+                            train_logger, train_batch_logger, EEGData_train)
+                scheduler.step()
                 state = {
                     'epoch': i,
                     'arch': opt.arch,
                     'state_dict': model.state_dict(),
                     'optimizer': optimizer.state_dict(),
-                    'best_prec1_audio_video': best_prec1_audio_video,
-                    'best_prec1_eeg': best_prec1_eeg
+                    'best_prec1': best_prec1,
                     }
                 save_checkpoint(state, False, opt, fold, train=True)
             
             if not opt.no_val:
                 
-                validation_loss, prec1_audio_video, prec1_eeg = val_epoch_multimodal(EEGDataLoader_val, i, val_loader, model, criterion, opt,
+                validation_loss, prec1 = val_epoch_multimodal(EEGData_val, i, val_loader, model, criterion, opt,
                                             val_logger)
-                is_best = prec1_audio_video > best_prec1_audio_video and prec1_eeg > best_prec1_eeg
-                best_prec1_audio_video = max(prec1_audio_video, best_prec1_audio_video)
-                best_prec1_eeg = max(prec1_eeg, best_prec1_eeg)
+                is_best = prec1 > best_prec1
+                best_prec1 = max(prec1, best_prec1)
                 state = {
                 'epoch': i,
                 'arch': opt.arch,
                 'state_dict': model.state_dict(),
                 'optimizer': optimizer.state_dict(),
-                'best_prec1_audio_video': best_prec1_audio_video,
-                'best_prec1_eeg': best_prec1_eeg
+                'best_prec1': best_prec1,
                 }
                
                 save_checkpoint(state, is_best, opt, fold, train=False)
@@ -220,7 +209,7 @@ if __name__ == '__main__':
         if opt.test:
 
             test_logger = Logger(
-                    os.path.join(opt.result_path, 'test'+str(fold)+'.log'), ['epoch', 'loss', 'prec1_audio_video','prec1_eeg'])
+                    os.path.join(opt.result_path, 'test'+str(fold)+'.log'), ['epoch', 'loss', 'prec1'])
 
             video_transform = transforms.Compose([
                 transforms.ToTensor(opt.video_norm_value)])
@@ -239,15 +228,9 @@ if __name__ == '__main__':
                 num_workers=opt.n_threads,
                 pin_memory=True)
             
-            EEGDataLoader_test = torch.utils.data.DataLoader(
-                EEGDataset_test,
-                batch_size=opt.batch_size,
-                shuffle=True,
-                num_workers=opt.n_threads,
-                pin_memory=True
-            )
+            EEGData_test = Synchronized_data(EEGDataset_test)
             
-            test_loss, test_prec1_audio_video, test_prec1_eeg = val_epoch_multimodal(EEGDataLoader_test, 100, test_loader, model, criterion, opt, test_logger)
+            test_loss, prec1 = val_epoch_multimodal(EEGData_test, 100, test_loader, model, criterion, opt, test_logger)
             
             with open(os.path.join(opt.result_path, 'test_set_bestval'+str(fold)+'.txt'), 'a') as f:
-                    f.write('Prec1_audio_video: ' + str(test_prec1_audio_video)+ '; Prec1_eeg: ' + str(test_prec1_eeg) + '; Loss: ' + str(test_loss))
+                    f.write('Prec1: ' + str(prec1)+ '; Loss: ' + str(test_loss))

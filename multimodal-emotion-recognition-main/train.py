@@ -8,8 +8,9 @@ from utils import AverageMeter, calculate_accuracy, calculate_precision
 from ContrastiveLearning import SupervisedContrastiveLoss
 
 
-def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
-                epoch_logger, batch_logger, EEGDataLoader_train):
+
+def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, scheduler, opt,
+                epoch_logger, batch_logger, EEGData_train):
     print('train at epoch {}'.format(epoch))
 
     model.train()
@@ -17,24 +18,25 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses_avarage = AverageMeter()
-    prec1_audio_video_avarage = AverageMeter()
-    prec1_eeg_avarage = AverageMeter()
+    prec1_avarage = AverageMeter()
+ 
         
     end_time = time.time()
-    contrastive_loss_fn = SupervisedContrastiveLoss(temperature=0.5)
-    
-    
-    for i, (item1, item2) in enumerate(zip(data_loader, EEGDataLoader_train)):
+ 
+    for i, item1 in enumerate(data_loader):
         data_time.update(time.time() - end_time)
     
         audio_inputs, visual_inputs, targets = item1
         
-        EEG_inputs, EEG_targets = item2
+        
+        EEG_inputs = EEGData_train.generate_artificial_batch(targets)
+        EEG_inputs = torch.stack(EEG_inputs)
+      
+        
         targets = targets.to(opt.device)
         EEG_inputs = EEG_inputs.to(opt.device)
-        EEG_targets = EEG_targets.to(opt.device)
         
-            
+        #DA VALUTARE SE CANCELLARE O MENO   
         if opt.mask is not None:
             with torch.no_grad():
                 
@@ -70,27 +72,25 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
 
         targets = Variable(targets)
         
-        audio_embeddings, video_embeddings, EEG_embeddigs, logits_audio_video, logits_eeg, output = model(audio_inputs, visual_inputs, EEG_inputs)
+        logits_output = model(audio_inputs, visual_inputs, EEG_inputs)
        
-        loss_contrastive = contrastive_loss_fn(audio_embeddings, video_embeddings, EEG_embeddigs, targets, EEG_targets)
-        
-        loss_audio_video = criterion(logits_audio_video, targets)
-        loss_eeg = criterion(logits_eeg, EEG_targets)
-        
-        total_loss = loss_audio_video + loss_eeg + loss_contrastive
        
         
-        prec1_audio_video = calculate_precision(logits_audio_video.data, targets.data)
-        prec1_eeg = calculate_precision(logits_eeg.data, EEG_targets.data)
+        total_loss = criterion(logits_output, targets)
+               
+        prec1 = calculate_precision(logits_output.data, targets.data)
+    
        
         
         losses_avarage.update(total_loss.data, opt.batch_size)
-        prec1_audio_video_avarage.update(prec1_audio_video, opt.batch_size)
-        prec1_eeg_avarage.update(prec1_eeg, opt.batch_size)
+        prec1_avarage.update(prec1, opt.batch_size)
+       
         
         optimizer.zero_grad()
         total_loss.backward()
         optimizer.step()
+        
+        
 
         batch_time.update(time.time() - end_time)
         end_time = time.time()
@@ -100,32 +100,28 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, opt,
             'batch': i + 1,
             'iter': (epoch - 1) * len(data_loader) + (i + 1),
             'loss': losses_avarage.val.item(),
-            'prec1_audio_video': prec1_audio_video_avarage.val.item(),
-            'prec1_eeg': prec1_eeg_avarage.val.item(),
+            'prec1': prec1_avarage.val.item(),
             'lr': optimizer.param_groups[0]['lr']
         })
-        if i % 18 ==0:
+        if i % 10 ==0:
             print('Epoch: [{0}][{1}/{2}]\t lr: {lr:.5f}\t'
                     'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                     'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                     'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                    'Prec@1_av {prec1_audio_video_avarage.val:.5f} ({prec1_audio_video_avarage.avg:.5f})\t'
-                    'Prec@1_eeg {prec1_eeg_avarage.val:.5f} ({prec1_eeg_avarage.avg:.5f})\t'.format(
+                    'Prec@1 {prec1_avarage.val:.5f} ({prec1_avarage.avg:.5f})\t'.format(
                         epoch,
                         i,
                         len(data_loader),
                         batch_time=batch_time,
                         data_time=data_time,
                         loss=losses_avarage,
-                        prec1_audio_video_avarage=prec1_audio_video_avarage,
-                        prec1_eeg_avarage = prec1_eeg_avarage,
+                        prec1_avarage=prec1_avarage,
                         lr=optimizer.param_groups[0]['lr']))
 
     epoch_logger.log({
         'epoch': epoch,
         'loss': losses_avarage.avg.item(),
-        'prec1_audio_video': prec1_audio_video_avarage.avg.item(),
-        'prec1_eeg': prec1_eeg_avarage.val.item(),
+        'prec1': prec1_avarage.avg.item(),
         'lr': optimizer.param_groups[0]['lr']
     })
 

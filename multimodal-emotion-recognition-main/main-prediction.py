@@ -18,12 +18,12 @@ if __name__ == '__main__':
     best_state = torch.load('c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/results/RAVDESS_multimodalcnn_15_best0.pth')
     model.load_state_dict(best_state['state_dict'])
     
-    video_audio_path="c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/raw_data/happy_wrong_without_audio.mp4"
+    video_audio_path="c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/raw_data/sad_correct.mp4"
     eeg_path="c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/EEGTest.npz"
     audio_var, video_var = preprocessing.preprocessing_sync_source(video_audio_path,video_norm_value=opt.video_norm_value, batch_size=1)
     eeg_var, eeg_label = preprocessing.preprocessing_async_source(eeg_path, batch_size=1)
     with torch.no_grad():
-        _ ,_ ,_ ,_ ,_ , output = model(x_audio=audio_var, x_visual=video_var, x_eeg=eeg_var)
+        output = model(x_audio=audio_var, x_visual=video_var, x_eeg=eeg_var)
     print("[LOGITS] Output: ", output)
     print("Label eeg: ", eeg_label)
     
