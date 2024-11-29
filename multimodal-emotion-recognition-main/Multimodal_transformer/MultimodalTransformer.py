@@ -59,5 +59,4 @@ class MultimodalTransformer(nn.Module):
         
         logits_output = self.classifier(concat_audio_video_eeg)
         
-              
         return logits_output

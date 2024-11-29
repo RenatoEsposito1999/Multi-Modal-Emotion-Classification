@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import random
-root = 'C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/RAVDESS'
+
+# Ottieni il percorso della directory superiore
+cartella_superiore = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
+sys.path.append(cartella_superiore)
+
+import opts
+opt = opts.parse_opts()
+
+root = opt.vido_audio_dataset_path
+print(root)
+exit(-1) #in onore di vincenzo
 
 n_folds=1
 folds = [[[0,1,2,3],[4,5,6,7],[8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]]]
@@ -13,7 +24,6 @@ for fold in range(n_folds):
         validation_set = []
         test_set = []
 	
-        #annotation_file = 'annotations_croppad_fold'+str(fold+1)+'.txt'
         annotation_file = 'annotations.txt'
 	
         for i,actor in enumerate(os.listdir(root)):

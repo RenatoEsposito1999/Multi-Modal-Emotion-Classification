@@ -50,6 +50,9 @@ def parse_opts():
     parser.add_argument('--manual_seed', default=1, type=int, help='Manually set random seed')
     parser.add_argument('--fusion', default='lt', type=str, help='fusion type: lt | it | ia')
     parser.add_argument('--mask', type=str, help='dropout type : softhard | noise | nodropout', default='nodropout')
+
+    parser.add_argument('--eeg_dataset_path',type=str,help='define path to EEG dataset',default='error: insert path for eeg')
+    parser.add_argument('--vido_audio_dataset_path',type=str,help='define path to dataset for audio and video',default='error: insert path for videos')
     args = parser.parse_args()
 
     return args

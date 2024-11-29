@@ -5,7 +5,6 @@ Created on Mon Oct 25 14:07:29 2021
 @author: chumache
 """
 import os
-import json
 import numpy as np
 import torch
 from torch import nn, optim
@@ -15,12 +14,10 @@ from opts import parse_opts
 from model import generate_model
 import transforms 
 from dataset import get_training_set, get_validation_set, get_test_set
-from utils import Logger, adjust_learning_rate, save_checkpoint
+from utils import Logger, save_checkpoint
 from train import train_epoch_multimodal
 from validation import val_epoch_multimodal
-import time
 
-from SimulatedDataset import SimulatedEEGDataset
 from training_preprocessing.eeg_preprocessing import EEGDataset,  create_dataset_from_file_npz, save_dataset_to_npz
 from training_preprocessing.synchronized_data import Synchronized_data
 
@@ -41,18 +38,7 @@ if __name__ == '__main__':
         
     opt.arch = '{}'.format(opt.model)  
     opt.store_name = '_'.join([opt.dataset, opt.model, str(opt.sample_duration)])
-    
-    '''EEGDataset_train = SimulatedEEGDataset(num_samples=1920)
-    EEGDataset_validation = SimulatedEEGDataset(num_samples=480)
-    EEGDataset_testing = SimulatedEEGDataset(num_samples=480)'''
-    print("Creo il training set: ")
-    
-    
-    #Modificare il size del training, validation e testing del EEG:
-    #Traning = 756
-    #Validation = 216
-    #Testing = 108
-   
+       
     # Specifica i nomi dei file CSV da cercare
     required_files = ["EEGTrain.npz", "EEGVal.npz", "EEGTest.npz"]
     
@@ -63,24 +49,20 @@ if __name__ == '__main__':
     found_files = [file for file in required_files if os.path.exists(os.path.join(directory, file))]
     
     if len(found_files) == len(required_files):
-        print("OK")
         EEGDataset_train = create_dataset_from_file_npz(required_files[0])
         EEGDataset_val = create_dataset_from_file_npz(required_files[1])
         EEGDataset_test = create_dataset_from_file_npz(required_files[2])
             
     else:
-        EEGDataset_complete = EEGDataset(path="C:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/datasets/SEED_IV/SEED_IV/eeg_raw_data")
+        # Da modificare completamente
+        EEGDataset_complete = EEGDataset(path=opt.eeg_dataset_path)
         EEGDataset_train, EEGDataset_val, EEGDataset_test = torch.utils.data.random_split(EEGDataset_complete, [756, 216, 108])
-        print(len(EEGDataset_train))
-        print(len(EEGDataset_val))
-        print(len(EEGDataset_test))
         save_dataset_to_npz(EEGDataset_train, "./EEGTrain.npz")
         save_dataset_to_npz(EEGDataset_val, "./EEGVal.npz")
         save_dataset_to_npz(EEGDataset_test, "./EEGTest.npz")
     
                       
     for fold in range(n_folds):
-        print(opt)
 
         torch.manual_seed(opt.manual_seed)
         model, parameters = generate_model(opt)
@@ -99,7 +81,6 @@ if __name__ == '__main__':
         
             training_data = get_training_set(opt, spatial_transform=video_transform) 
             
-            print(len(training_data))
         
             train_loader = torch.utils.data.DataLoader(
                 training_data,
@@ -117,14 +98,6 @@ if __name__ == '__main__':
                 os.path.join(opt.result_path, 'train_batch'+str(fold)+'.log'),
                 ['epoch', 'batch', 'iter', 'loss', 'prec1', 'lr'])
             
-            '''optimizer = optim.SGD(
-                parameters,
-                lr=opt.learning_rate,
-                momentum=opt.momentum,
-                dampening=opt.dampening,
-                weight_decay=opt.weight_decay,
-                nesterov=False)'''
-            
             optimizer = optim.Adam(
                             parameters,
                             lr=opt.learning_rate,
@@ -134,9 +107,6 @@ if __name__ == '__main__':
                             amsgrad=True
                         )
  
-            
-            '''scheduler = lr_scheduler.ReduceLROnPlateau(
-                optimizer, 'min', patience=opt.lr_patience)'''
                 
             scheduler = lr_scheduler.StepLR(optimizer, 20, 0.1)
         
@@ -218,7 +188,6 @@ if __name__ == '__main__':
         
             #load best model
             best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name)+str(fold)+'.pth')
-            #best_state = torch.load('c:/Users/Vince/Desktop/COGNITIVE_ROBOTICS/cognitive-robotics-project/multimodal-emotion-recognition-main/lt_1head_moddrop_2.pth', map_location=torch.device('cpu'))
             model.load_state_dict(best_state['state_dict'])
         
             test_loader = torch.utils.data.DataLoader(
