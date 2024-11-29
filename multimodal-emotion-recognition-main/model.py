@@ -19,6 +19,7 @@ def generate_model(opt):
         pytorch_total_params = sum(p.numel() for p in model.parameters() if
                                p.requires_grad)
         print("Total number of trainable parameters: ", pytorch_total_params)
+
         
     
     return model, model.parameters()

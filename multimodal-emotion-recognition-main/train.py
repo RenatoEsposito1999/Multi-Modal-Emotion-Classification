@@ -29,12 +29,13 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, sche
         audio_inputs, visual_inputs, targets = item1
         
         
-        EEG_inputs = EEGData_train.generate_artificial_batch(targets)
-        EEG_inputs = torch.stack(EEG_inputs)
+        eeg_inputs = EEGData_train.generate_artificial_batch(targets)
+        eeg_inputs = torch.stack(eeg_inputs)
+      
       
         
         targets = targets.to(opt.device)
-        EEG_inputs = EEG_inputs.to(opt.device)
+        
         
         #DA VALUTARE SE CANCELLARE O MENO   
         if opt.mask is not None:
@@ -50,7 +51,7 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, sche
                     targets = targets[shuffle]
                     
                 elif opt.mask == 'softhard':
-                    coefficients = torch.randint(low=0, high=100,size=(audio_inputs.size(0),1,1))/100
+                    '''coefficients = torch.randint(low=0, high=100,size=(audio_inputs.size(0),1,1))/100
                     vision_coefficients = 1 - coefficients
                     coefficients = coefficients.repeat(1,audio_inputs.size(1),audio_inputs.size(2))
                     vision_coefficients = vision_coefficients.unsqueeze(-1).unsqueeze(-1).repeat(1,visual_inputs.size(1), visual_inputs.size(2), visual_inputs.size(3), visual_inputs.size(4))
@@ -62,13 +63,42 @@ def train_epoch_multimodal(epoch, data_loader, model, criterion, optimizer, sche
                     shuffle = torch.randperm(audio_inputs.size()[0])
                     audio_inputs = audio_inputs[shuffle]
                     visual_inputs = visual_inputs[shuffle]
+                    targets = targets[shuffle]'''
+                    # Generate coefficients for audio and visual inputs
+                    coefficients = torch.randint(low=0, high=100, size=(audio_inputs.size(0), 1, 1)) / 100
+                    vision_coefficients = 1 - coefficients
+                    # Generate coefficients for EEG inputs
+                    eeg_coefficients = torch.randint(low=0, high=100, size=(eeg_inputs.size(0), 1, 1)) / 100# Repeat coefficients to match input dimensions
+                    coefficients = coefficients.repeat(1, audio_inputs.size(1), audio_inputs.size(2))
+                    vision_coefficients = vision_coefficients.unsqueeze(-1).unsqueeze(-1).repeat(
+                        1, visual_inputs.size(1), visual_inputs.size(2), visual_inputs.size(3), visual_inputs.size(4)
+                    )
+                    eeg_coefficients = eeg_coefficients.repeat(1, eeg_inputs.size(1), eeg_inputs.size(2))
+                
+                    # Apply dropout masks and concatenate
+                    audio_inputs = torch.cat((audio_inputs, audio_inputs * coefficients, 
+                                            torch.zeros(audio_inputs.size()), audio_inputs), dim=0)
+                    visual_inputs = torch.cat((visual_inputs, visual_inputs * vision_coefficients, 
+                                                visual_inputs, torch.zeros(visual_inputs.size())), dim=0)
+                    eeg_inputs = torch.cat((eeg_inputs, eeg_inputs * eeg_coefficients, 
+                                            torch.zeros(eeg_inputs.size()), eeg_inputs), dim=0)
+                
+                    # Concatenate targets for all modalities
+                    targets = torch.cat((targets, targets, targets, targets), dim=0)
+                # Shuffle inputs and targets
+                    shuffle = torch.randperm(audio_inputs.size()[0])
+                    audio_inputs = audio_inputs[shuffle]
+                    visual_inputs = visual_inputs[shuffle]
+                    eeg_inputs = eeg_inputs[shuffle]
                     targets = targets[shuffle]
+
    
         visual_inputs = visual_inputs.permute(0,2,1,3,4)
         visual_inputs = visual_inputs.reshape(visual_inputs.shape[0]*visual_inputs.shape[1], visual_inputs.shape[2], visual_inputs.shape[3], visual_inputs.shape[4])
-        
+        eeg_inputs = eeg_inputs.to(opt.device)
         audio_inputs = Variable(audio_inputs)
         visual_inputs = Variable(visual_inputs)
+        EEG_inputs=Variable(eeg_inputs)
 
         targets = Variable(targets)
         

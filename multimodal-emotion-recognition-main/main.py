@@ -67,6 +67,7 @@ if __name__ == '__main__':
         torch.manual_seed(opt.manual_seed)
         model, parameters = generate_model(opt)
         
+        
         #Define loss for training
         criterion = nn.CrossEntropyLoss()
         criterion = criterion.to(opt.device)
@@ -157,7 +158,7 @@ if __name__ == '__main__':
                     'optimizer': optimizer.state_dict(),
                     'best_prec1': best_prec1,
                     }
-                save_checkpoint(state, False, opt, fold, train=True)
+                save_checkpoint(state, model,  False, opt, fold, train=True)
             
             if not opt.no_val:
                 
@@ -173,7 +174,7 @@ if __name__ == '__main__':
                 'best_prec1': best_prec1,
                 }
                
-                save_checkpoint(state, is_best, opt, fold, train=False)
+                save_checkpoint(state, model, is_best, opt, fold, train=False)
 
         # Testing Phase       
         if opt.test:
@@ -188,8 +189,32 @@ if __name__ == '__main__':
         
             #load best model
             best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name)+str(fold)+'.pth')
+                       
             model.load_state_dict(best_state['state_dict'])
-        
+            
+            #QUESTA PARTE DI CODICE SEREVE PER SALVARE I PESI IN CPU
+            # Se il modello è avvolto in DataParallel
+            '''if isinstance(model, torch.nn.DataParallel):
+                model = model.module  # Ottieni il modello originale'''
+                
+            
+            #da metterlo in save checkpoint
+            #torch.save(model.module.state_dict(), 'model.pth')  # Salva solo lo state_dict del modello originale
+            
+            
+            
+            #state_cpu = torch.load("./model.pth")
+            #model.load_state_dict(state_cpu)
+            
+            
+            #OK:
+            '''prefix = 'module.'
+            n_clip = len(prefix)
+            state_dict = {k[len(prefix):] if k.startswith(prefix) else k: v for k, v in best_state["state_dict"].items()}
+            model.load_state_dict(state_dict)'''
+            #model = torch.load("entire_model.pth", map_location=torch.device('cpu'))
+            
+             
             test_loader = torch.utils.data.DataLoader(
                 test_data,
                 batch_size=opt.batch_size,

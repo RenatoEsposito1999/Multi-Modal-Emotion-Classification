@@ -12,8 +12,7 @@ import opts
 opt = opts.parse_opts()
 
 root = opt.vido_audio_dataset_path
-print(root)
-exit(-1) #in onore di vincenzo
+
 
 n_folds=1
 folds = [[[0,1,2,3],[4,5,6,7],[8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]]]

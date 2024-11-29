@@ -86,12 +86,13 @@ def calculate_precision(outputs, targets):
     
 
 
-def save_checkpoint(state, is_best, opt, fold, train):
+def save_checkpoint(state, model, is_best, opt, fold, train):
     if train:
         torch.save(state, '%s/%s_checkpoint'% (opt.result_path, opt.store_name)+str(fold)+'.pth')
+        torch.save(model.module.state_dict(), '%s/%s_checkpoint'% (opt.result_path, opt.store_name)+str(fold)+'_cpu_.pth')
     if is_best:
         shutil.copyfile('%s/%s_checkpoint' % (opt.result_path, opt.store_name)+str(fold)+'.pth','%s/%s_best' % (opt.result_path, opt.store_name)+str(fold)+'.pth')
-
+        shutil.copyfile('%s/%s_checkpoint' % (opt.result_path, opt.store_name)+str(fold)+'.pth','%s/%s_best' % (opt.result_path, opt.store_name)+str(fold)+'_cpu_.pth')
 
 def adjust_learning_rate(optimizer, epoch, opt):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""

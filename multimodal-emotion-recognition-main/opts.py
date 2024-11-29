@@ -52,7 +52,7 @@ def parse_opts():
     parser.add_argument('--mask', type=str, help='dropout type : softhard | noise | nodropout', default='nodropout')
 
     parser.add_argument('--eeg_dataset_path',type=str,help='define path to EEG dataset',default='error: insert path for eeg')
-    parser.add_argument('--vido_audio_dataset_path',type=str,help='define path to dataset for audio and video',default='error: insert path for videos')
+    parser.add_argument('--video_audio_dataset_path',type=str,help='define path to dataset for audio and video',default='error: insert path for videos')
     args = parser.parse_args()
 
     return args
