@@ -9,7 +9,7 @@ from Multimodal_transformer.Transformers.Transformer_funcs import EEGTransformer
 from Multimodal_transformer.Transformers.Transformer_funcs import AttentionBlock
 
 class MultimodalTransformer(nn.Module):
-    def __init__(self,num_classes=4,seq_length=15,num_channels_eeg=14,pretr_ef='None',num_heads=1):
+    def __init__(self,num_classes=4,seq_length=15,num_channels_eeg=62,pretr_ef='None',num_heads=1):
         super(MultimodalTransformer,self).__init__()
 
         self.embeds_dim = 128
@@ -25,7 +25,7 @@ class MultimodalTransformer(nn.Module):
         self.av = AttentionBlock(in_dim_k=self.input_dim_video, in_dim_q=self.input_dim_audio, out_dim=self.embeds_dim, num_heads=num_heads)
         self.va = AttentionBlock(in_dim_k=self.input_dim_audio, in_dim_q=self.input_dim_video, out_dim=self.embeds_dim, num_heads=num_heads)
 
-        self.EEG_Transformer = EEGTransformerEncoder(d_model=self.embeds_dim,num_heads=num_heads,sequence_length=128)
+        self.EEG_Transformer = EEGTransformerEncoder(d_model=self.embeds_dim,num_heads=num_heads, sequence_length=51801)
 
         self.classifier = nn.Sequential(
                     nn.Linear(self.embeds_dim*3, num_classes),
@@ -35,7 +35,7 @@ class MultimodalTransformer(nn.Module):
         
         
         
-    def forward(self,x_audio,x_visual,x_eeg):
+    def forward(self,x_audio,x_visual,x_eeg, mask):
 
         x_audio = self.audio_preprocessing.forward_stage1(x_audio)
         proj_x_a = self.audio_preprocessing.forward_stage2(x_audio)
@@ -52,8 +52,7 @@ class MultimodalTransformer(nn.Module):
 
         audio_pooled = h_av.mean([1]) #mean accross temporal dimension
         video_pooled = h_va.mean([1])
-        proj_x_eeg = self.EEG_preprocessing.forward(x_eeg)
-        eeg_pooled = self.EEG_Transformer.forward(proj_x_eeg)
+        eeg_pooled = self.EEG_Transformer.forward(x_eeg, mask)
         
         concat_audio_video_eeg = torch.cat((audio_pooled, video_pooled, eeg_pooled), dim=-1)
         

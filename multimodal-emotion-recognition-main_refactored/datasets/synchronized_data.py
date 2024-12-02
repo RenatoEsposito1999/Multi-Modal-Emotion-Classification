@@ -21,7 +21,7 @@ class Synchronized_data():
     
         # Populate the dictionary with indices corresponding to each label
         for index in range(len(dataset)):
-            _, label = dataset[index]
+            _, label, _ = dataset[index]
             label_dict[label.item()].append(index)  # Use .item() to get the integer value from the tensor
     
         # Create separate datasets for each label
@@ -36,9 +36,11 @@ class Synchronized_data():
     
     def generate_artificial_batch(self, labels):
         batch = []
+        batch_mask = []
         for i in labels:
             selection_list = self.complete_dataset[i]
             random_index = torch.randint(0, len(selection_list), (1,)).item()  # Get a random index
             random_element = selection_list[random_index][0]# Access the random element
+            batch_mask.append(selection_list[random_index][2])
             batch.append(random_element)
-        return batch
+        return batch, batch_mask

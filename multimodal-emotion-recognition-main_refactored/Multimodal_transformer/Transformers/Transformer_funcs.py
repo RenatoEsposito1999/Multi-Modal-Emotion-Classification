@@ -128,7 +128,7 @@ class AttentionBlock(nn.Module):
         return x
 
 class EEGTransformerEncoder(nn.Module):
-    def __init__(self, d_model=128, num_heads=8, num_layers=4, sequence_length=256):
+    def __init__(self, d_model=128, num_heads=8, num_layers=4, sequence_length=62):
         super(EEGTransformerEncoder, self).__init__()
         self.d_model = d_model
         self.sequence_length = sequence_length
@@ -139,19 +139,28 @@ class EEGTransformerEncoder(nn.Module):
         # Transformer encoder layers
         encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=num_heads, batch_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+        
+        self.feature_projection = nn.Linear(62, d_model)
+ 
 
-    def forward(self, x):
+    def forward(self, x, mask):
         """
         Forward pass for the EEG Transformer Encoder model.
 
         Args:
             x: Tensor of shape (batch_size, sequence_length, d_model)
         """
+        
+        x = self.feature_projection(x)
+ 
         # Add positional encoding
-        x = x + self.positional_encoding[:self.sequence_length, :]
+        x = x + self.positional_encoding[:, :x.size(1), :]
 
         # Pass through transformer encoder
-        x = self.transformer_encoder(x)
+        
+        mask = mask==0
+        x = self.transformer_encoder(x, src_key_padding_mask=mask)
+        
 
         # Return the final embedding
         return x.mean(dim=1)  # Aggregates across time steps to get a fixed-size embedding

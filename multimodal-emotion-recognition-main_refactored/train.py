@@ -49,10 +49,14 @@ def train_epoch_multimodal(epoch, data_loader_audio_video, model, criterion_loss
         audio_inputs, visual_inputs, targets = item1
         
         
-        eeg_inputs = EEGData_train.generate_artificial_batch(targets)
+
+       
+        eeg_inputs, mask_inputs = EEGData_train.generate_artificial_batch(targets)
+        
+        
+        mask_inputs = torch.stack(mask_inputs)
         eeg_inputs = torch.stack(eeg_inputs)
-      
-      
+
         
         targets = targets.to(opt.device)
         
@@ -67,13 +71,15 @@ def train_epoch_multimodal(epoch, data_loader_audio_video, model, criterion_loss
         visual_inputs = visual_inputs.reshape(visual_inputs.shape[0]*visual_inputs.shape[1], visual_inputs.shape[2], visual_inputs.shape[3], visual_inputs.shape[4])
         
         eeg_inputs = eeg_inputs.to(opt.device)
+        mask_inputs = mask_inputs.to(opt.device)
         audio_inputs = Variable(audio_inputs)
         visual_inputs = Variable(visual_inputs)
         EEG_inputs=Variable(eeg_inputs)
 
         targets = Variable(targets)
         
-        logits_output = model(audio_inputs, visual_inputs, EEG_inputs)
+        
+        logits_output = model(audio_inputs, visual_inputs, EEG_inputs,mask_inputs)
        
        
         
