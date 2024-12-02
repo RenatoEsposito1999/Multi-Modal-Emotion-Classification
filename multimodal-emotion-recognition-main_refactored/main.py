@@ -46,7 +46,9 @@ if __name__ == '__main__':
     criterion_loss = criterion_loss.to(opt.device)
     
     #In this function apply the preprocess for eeg data, in particular create the three files .npz into the folder EEG_data
-    eeg_preprocessing.preprocess(opt.eeg_dataset_path, 128)
+    eeg_preprocessing.preprocess(opt.eeg_dataset_path)
+    
+    exit(-1)
     
     
     #Training-Validation Phase

@@ -25,7 +25,7 @@ channels_epoc_plus = [3,4,5,7,11,13,15,21,23,31,41,49,58,60]
     Returns:
         None
 '''
-def preprocess(path, sequence_length):
+def preprocess(path):
     found_files = [file for file in ["EEGTrain.npz", "EEGVal.npz", "EEGTest.npz"] if os.path.exists(os.path.join("./EEG_data", file))]
     if len(found_files) != 3:
         data = []
@@ -42,29 +42,15 @@ def preprocess(path, sequence_length):
                 for file in files:
                     if file.endswith(".mat"):
                         datamat = loadmat(path + "/" + folder + "/" + file)
-                        index = 0
-                            
+                        index = 0                     
                         for key in datamat:
                             if not key.startswith('__'):
                                 tmp = datamat[key]
                                 # Inizializza l'array di output
-                                downsampled_data = np.zeros((14, sequence_length))
-                                idx = -1
-                                for i in range(tmp.shape[0]):
-                                    if i in channels_epoc_plus:
-                                        idx = idx + 1
-                                        # Genera gli indici originali e quelli target
-                                        original_indices = np.linspace(0, 1, tmp.shape[1])
-                                        target_indices = np.linspace(0, 1, sequence_length)
-                                        # Crea la funzione di interpolazione e applicala agli indici target
-                                        interp_func = interpolate.interp1d(original_indices, tmp[i], kind='linear')
-                                        downsampled_data[idx] = interp_func(target_indices)
-                                    
+                                data.append(tmp.T)                             
                                 labels.append(label[index])
-                                data.append(downsampled_data.T)
                                 index += 1
-                    
-        print(downsampled_data.T.shape)  # (128,14)
+        
             
         data = np.stack(data)  # Shape: (num_samples, sequence_length, num_channels)
         labels = np.array(labels) # Shape: (num_samples,)
