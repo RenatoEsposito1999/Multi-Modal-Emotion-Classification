@@ -168,3 +168,7 @@ dataset/
 
 #Annotations txt
 training_processing/annotations.txt
+/multimodal-emotion-recognition-main_refactored/raw_data_video
+/multimodal-emotion-recognition-main_refactored/results
+/multimodal-emotion-recognition-main/results
+/multimodal-emotion-recognition-main/results

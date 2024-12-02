@@ -139,10 +139,12 @@ if __name__ == '__main__':
             print('loading checkpoint {}'.format(opt.resume_path))
             checkpoint = torch.load(opt.resume_path)
             assert opt.arch == checkpoint['arch']
-            best_prec1_audio_video = checkpoint['best_prec1_audio_video']
-            best_prec1_eeg = checkpoint['best_prec1_eeg']
+            best_prec1 = checkpoint['best_prec1']
             opt.begin_epoch = checkpoint['epoch']
             model.load_state_dict(checkpoint['state_dict'])
+            optimizer.load_state_dict(checkpoint["optimizer"])
+            
+        
 
         #Start training and validation
         for i in range(opt.begin_epoch, opt.n_epochs + 1):
