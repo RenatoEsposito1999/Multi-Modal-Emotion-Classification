@@ -1,45 +1,42 @@
 import torch
+from torch.utils.data import Dataset
+import random
 
-
-class Synchronized_data():
+class SynchronizedDataset(Dataset):
     def __init__(self, dataloader):
-        self.complete_dataset = self.split_dataset(dataloader) #return list of datasets splitted by labels
-        
-        
-    def split_dataset(self, dataloader):
         """
-        Splits a dataset into separate datasets based on labels.
-    
+        Initialize the dataset by storing combined data and masks for each label
+        
         Args:
-            dataset (Dataset): A dataset object with labeled data.
-    
-        Returns:
-            tuple: Four datasets corresponding to labels 0, 1, 2, and 3.
+            dataloader (torch.utils.data.DataLoader): Input dataloader
         """
-        # Initialize a dictionary to group indices by labels
-        label_dict = {0: [], 1: [], 2: [], 3: []}
-        # Populate the dictionary with indices corresponding to each label
-        for batch_data, labels, mask in dataloader:
-            for label in labels:
-                label_dict[label.item()].append(label)  # Use .item() to get the integer value from the tensor
-    
-        # Create separate datasets for each label
-        dataset_0 = torch.utils.data.Subset(dataloader, label_dict[0])
-        dataset_1 = torch.utils.data.Subset(dataloader, label_dict[1])
-        dataset_2 = torch.utils.data.Subset(dataloader, label_dict[2])
-        dataset_3 = torch.utils.data.Subset(dataloader, label_dict[3])
+        # Dictionary to store (data, mask) tuples for each label
+        self.label_data = {0: [], 1: [], 2: [], 3: []}
         
-        complete_dataset = [dataset_0, dataset_1, dataset_2, dataset_3]
-        
-        return complete_dataset 
+        # Populate the label_data dictionary
+        for batch_data, labels, masks in dataloader:
+            for i in range(len(labels)):
+                label = labels[i].item()
+                self.label_data[label].append((batch_data[i], masks[i]))
     
     def generate_artificial_batch(self, labels):
-        batch = []
-        batch_mask = []
-        for i in labels:
-            selection_list = self.complete_dataset[i]
-            random_index = torch.randint(0, len(selection_list), (1,)).item()  # Get a random index
-            random_element = selection_list[random_index][0]# Access the random element
-            batch_mask.append(selection_list[random_index][2])
-            batch.append(random_element)
-        return batch, batch_mask
+        """
+        Generate an artificial batch based on specified labels
+        
+        Args:
+            labels (list): List of label indices to sample from
+        
+        Returns:
+            list: List of (data, mask) tuples
+        """
+        artificial_batch = []
+        
+        for label in labels:
+            # Randomly select a data point for this label
+            if not self.label_data[label]:
+                raise ValueError(f"No data available for label {label}")
+            
+            random_data = random.choice(self.label_data[label])
+            artificial_batch.append(random_data)
+        
+        return artificial_batch

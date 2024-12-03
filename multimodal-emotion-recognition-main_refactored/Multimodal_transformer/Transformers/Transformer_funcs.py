@@ -128,35 +128,35 @@ class AttentionBlock(nn.Module):
         return x
 
 class EEGTransformerEncoder(nn.Module):
-    def __init__(self, d_model=128, num_heads=8, num_layers=4, sequence_length=62):
+    def __init__(self, input_features, d_model=128, num_heads=8, num_layers=4):
         super(EEGTransformerEncoder, self).__init__()
         self.d_model = d_model
-        self.sequence_length = sequence_length
 
-        # Positional encoding for the transformer input
-        self.positional_encoding = nn.Parameter(self._generate_positional_encoding(sequence_length, d_model))
+        self.feature_projection = nn.Linear(input_features, d_model)
 
         # Transformer encoder layers
         encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=num_heads, batch_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
         
-        
-
 
     def forward(self, x, mask):
         """
         Forward pass for the EEG Transformer Encoder model.
 
         Args:
-            x: Tensor of shape (batch_size, sequence_length, d_model)
+            x: Tensor of shape (batch_size, sequence_length, d_features)
         """
- 
+
+        x = self.feature_projection(x) # x : [batchsize, sequence_length,d_model]
+
+        positional_encoding = self._generate_positional_encoding(x.size(1), self.d_model)
+
         # Add positional encoding
-        x = x + self.positional_encoding[:self.sequence_length,:]
+        x = x + self.positional_encoding[:,:x.size(1),:]
 
         # Pass through transformer encoder
         
-        mask = mask==0
+        #mask = mask==0
         x = self.transformer_encoder(x, src_key_padding_mask=mask)
         
 

@@ -20,12 +20,12 @@ class MultimodalTransformer(nn.Module):
 
         self.audio_preprocessing = AudioCNNPool(num_classes=num_classes)
         self.video_preprocessing = EfficientFaceTemporal([4, 8, 4], [29, 116, 232, 464, 1024], num_classes, seq_length)
-        self.EEG_preprocessing = EEGCNNPreprocessor(d_model=self.embeds_dim, num_channels=self.num_channels_eeg, cnn_out_channels=self.embeds_dim)
+        #self.EEG_preprocessing = EEGCNNPreprocessor(d_model=self.embeds_dim, num_channels=self.num_channels_eeg, cnn_out_channels=self.embeds_dim)
 
         self.av = AttentionBlock(in_dim_k=self.input_dim_video, in_dim_q=self.input_dim_audio, out_dim=self.embeds_dim, num_heads=num_heads)
         self.va = AttentionBlock(in_dim_k=self.input_dim_audio, in_dim_q=self.input_dim_video, out_dim=self.embeds_dim, num_heads=num_heads)
 
-        self.EEG_Transformer = EEGTransformerEncoder(d_model=self.embeds_dim,num_heads=num_heads, sequence_length=51801)
+        self.EEG_Transformer = EEGTransformerEncoder(d_model=self.embeds_dim,num_heads=num_heads)
 
         self.classifier = nn.Sequential(
                     nn.Linear(self.embeds_dim*3, num_classes),
@@ -52,9 +52,9 @@ class MultimodalTransformer(nn.Module):
 
         audio_pooled = h_av.mean([1]) #mean accross temporal dimension
         video_pooled = h_va.mean([1])
-        proj_x_eeg = self.EEG_preprocessing.forward(x_eeg)
+        #proj_x_eeg = self.EEG_preprocessing.forward(x_eeg)
         
-        eeg_pooled = self.EEG_Transformer.forward(proj_x_eeg, mask)
+        eeg_pooled = self.EEG_Transformer.forward(x_eeg, mask)
         
         concat_audio_video_eeg = torch.cat((audio_pooled, video_pooled, eeg_pooled), dim=-1)
         
