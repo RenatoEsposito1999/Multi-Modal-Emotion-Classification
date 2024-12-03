@@ -26,7 +26,7 @@ from torch.optim import lr_scheduler
 
 '''
 
-def training_validation_processing(opt, model, criterion_loss):
+def training_validation_processing(opt, model, criterion_loss, train_split_eeg, validation_split_eeg):
     
     if not opt.no_train:
     
@@ -48,11 +48,13 @@ def training_validation_processing(opt, model, criterion_loss):
         
         
         #Genereta training set for EEG
-        EEGDataset_train = get_training_set_EEG()
+        #EEGDataset_train = get_training_set_EEG()
         
         #This is used to pick randomly data synchronized with the batch of audio-video set, this because the number of data
         #of EEG is so smaller respect to video-audio data.
-        EEGData_train = Synchronized_data(EEGDataset_train)
+        EEGData_train = Synchronized_data(train_split_eeg)
+        
+        
             
         #Create two logger to save information about the training into a log file
         train_logger = Logger(
@@ -92,11 +94,13 @@ def training_validation_processing(opt, model, criterion_loss):
             pin_memory=True)
      
         #generate the validation set of EEG
-        EEGDataset_val = get_validation_set_EEG()
+        #EEGDataset_val = get_validation_set_EEG()
         
         #This is used to pick randomly data synchronized with the batch of audio-video set, this because the number of data
         #of EEG is so smaller respect to video-audio data
-        EEGData_val = Synchronized_data(EEGDataset_val)
+        EEGData_val = Synchronized_data(validation_split_eeg)
+        
+        
         
         #Create a logger in order to save all information about the validation into a file log
         val_logger = Logger(
@@ -116,6 +120,7 @@ def training_validation_processing(opt, model, criterion_loss):
                 
 
     #Start training and validation
+    print("Starto il training lets go: ")
     for i in range(opt.begin_epoch, opt.n_epochs + 1):
         
             if not opt.no_train:

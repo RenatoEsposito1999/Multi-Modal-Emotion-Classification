@@ -52,7 +52,9 @@ class MultimodalTransformer(nn.Module):
 
         audio_pooled = h_av.mean([1]) #mean accross temporal dimension
         video_pooled = h_va.mean([1])
-        eeg_pooled = self.EEG_Transformer.forward(x_eeg, mask)
+        proj_x_eeg = self.EEG_preprocessing.forward(x_eeg)
+        
+        eeg_pooled = self.EEG_Transformer.forward(proj_x_eeg, mask)
         
         concat_audio_video_eeg = torch.cat((audio_pooled, video_pooled, eeg_pooled), dim=-1)
         

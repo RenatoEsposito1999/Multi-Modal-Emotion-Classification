@@ -2,11 +2,11 @@ import torch
 
 
 class Synchronized_data():
-    def __init__(self, dataset):
-        self.complete_dataset = self.split_dataset(dataset) #return list of datasets splitted by labels
+    def __init__(self, dataloader):
+        self.complete_dataset = self.split_dataset(dataloader) #return list of datasets splitted by labels
         
         
-    def split_dataset(self, dataset):
+    def split_dataset(self, dataloader):
         """
         Splits a dataset into separate datasets based on labels.
     
@@ -18,17 +18,16 @@ class Synchronized_data():
         """
         # Initialize a dictionary to group indices by labels
         label_dict = {0: [], 1: [], 2: [], 3: []}
-    
         # Populate the dictionary with indices corresponding to each label
-        for index in range(len(dataset)):
-            _, label, _ = dataset[index]
-            label_dict[label.item()].append(index)  # Use .item() to get the integer value from the tensor
+        for batch_data, labels, mask in dataloader:
+            for label in labels:
+                label_dict[label.item()].append(label)  # Use .item() to get the integer value from the tensor
     
         # Create separate datasets for each label
-        dataset_0 = torch.utils.data.Subset(dataset, label_dict[0])
-        dataset_1 = torch.utils.data.Subset(dataset, label_dict[1])
-        dataset_2 = torch.utils.data.Subset(dataset, label_dict[2])
-        dataset_3 = torch.utils.data.Subset(dataset, label_dict[3])
+        dataset_0 = torch.utils.data.Subset(dataloader, label_dict[0])
+        dataset_1 = torch.utils.data.Subset(dataloader, label_dict[1])
+        dataset_2 = torch.utils.data.Subset(dataloader, label_dict[2])
+        dataset_3 = torch.utils.data.Subset(dataloader, label_dict[3])
         
         complete_dataset = [dataset_0, dataset_1, dataset_2, dataset_3]
         

@@ -140,8 +140,8 @@ class EEGTransformerEncoder(nn.Module):
         encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=num_heads, batch_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
         
-        self.feature_projection = nn.Linear(62, d_model)
- 
+        
+
 
     def forward(self, x, mask):
         """
@@ -150,11 +150,9 @@ class EEGTransformerEncoder(nn.Module):
         Args:
             x: Tensor of shape (batch_size, sequence_length, d_model)
         """
-        
-        x = self.feature_projection(x)
  
         # Add positional encoding
-        x = x + self.positional_encoding[:, :x.size(1), :]
+        x = x + self.positional_encoding[:self.sequence_length,:]
 
         # Pass through transformer encoder
         
