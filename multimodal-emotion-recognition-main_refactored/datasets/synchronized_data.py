@@ -28,9 +28,9 @@ class SynchronizedDataset(Dataset):
             labels (list): List of label indices to sample from.
         
         Returns:
-            Tensor: A tensor of shape [2, len(labels), max(data_dim,max_dim)], where:
-                    - dim 0 = 0 contains the data.
-                    - dim 0 = 1 contains the masks.
+            Tensor: A tensor of shape [batch_size, 2, sequence_len, features], where:
+                    - dim 1 = 0 contains the data.
+                    - dim 1 = 1 contains the masks.
         """
         artificial_data = []
         artificial_masks = []
@@ -47,10 +47,16 @@ class SynchronizedDataset(Dataset):
             artificial_masks.append(mask)
         
         # Convert the data and masks to tensors
-        data_tensor = torch.stack(artificial_data)  # Shape: [len(labels), ...]
-        mask_tensor = torch.stack(artificial_masks)  # Shape: [len(labels), ...]
-
+        data_tensor = torch.stack(artificial_data)  # Shape: [batch_size, sequence_len, features]
+        mask_tensor = torch.stack(artificial_masks)  # Shape: [batch_size, sequence_len, features]
+        
         # Combine data and mask into a single tensor with an extra dimension
-        combined_tensor = torch.stack([data_tensor, mask_tensor], dim=0)  # Shape: [2, len(labels), ...]
+        combined_tensor = torch.stack([data_tensor, mask_tensor], dim=1)  # Shape: [batch_size, 2, sequence_len, features]
+        
+
+        ## Access data_tensor: combined_tensor [:,0,:,:]
+        ## Access mask_tensor first element: [0,1,:,:]
+
+        ### Abbasso l'annotation.txt
 
         return combined_tensor
