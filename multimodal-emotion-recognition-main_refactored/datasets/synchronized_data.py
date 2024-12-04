@@ -1,8 +1,9 @@
 import torch
 from torch.utils.data import Dataset
 import random
+import numpy as np
 
-class SynchronizedDataset(Dataset):
+class Synchronized_data(Dataset):
     def __init__(self, dataloader):
         """
         Initialize the dataset by storing combined data and masks for each label.
@@ -14,10 +15,35 @@ class SynchronizedDataset(Dataset):
         self.label_data = {0: [], 1: [], 2: [], 3: []}
         
         # Populate the label_data dictionary
-        for batch_data, labels, masks in dataloader:
+        for batch_data, labels in dataloader:
             for i in range(len(labels)):
                 label = labels[i].item()
-                self.label_data[label].append((batch_data[i], masks[i]))
+                self.label_data[label].append(batch_data[i])
+                
+    def pad_and_mask(self, sequence, max_length):
+        """
+        Pad a single sequence to the given max_length and create a mask.
+        """
+        length = sequence.shape[0]
+        padding = max_length - length
+        padded_sequence = np.pad(sequence, ((0, padding), (0, 0)), mode='constant', constant_values=0)
+        mask = [1] * length + [0] * padding  # 1 for real data, 0 for padding
+        return padded_sequence, mask
+
+
+    # Define custom collate function for padding and masking
+    def collate_fn(self, datas):
+        max_sequence_length=0
+        for data in datas:
+            max_sequence_length = max(data.shape[0], max_sequence_length)
+        padded_data, masks = zip(*[self.pad_and_mask(data, max_sequence_length) for data in datas])
+            
+        # Convert to tensors
+        padded_data = torch.tensor(padded_data, dtype=torch.float32)
+        masks = torch.tensor(masks, dtype=torch.float32)
+        
+            
+        return padded_data, masks
     
     def generate_artificial_batch(self, labels):
         """
@@ -33,22 +59,26 @@ class SynchronizedDataset(Dataset):
                     - dim 1 = 1 contains the masks.
         """
         artificial_data = []
-        artificial_masks = []
         
         for label in labels:
-            if not self.label_data[label]:
+            print(type(label.item()))
+            print(label.item())
+            if not self.label_data[label.item()]:
                 raise ValueError(f"No data available for label {label}")
             
             # Randomly select one data point for this label
-            random_data = random.choice(self.label_data[label])
-            data, mask = random_data  # Unpack into data and mask
-            
-            artificial_data.append(data)
-            artificial_masks.append(mask)
+            random_data = random.choice(self.label_data[label.item()])
+            artificial_data.append(random_data)
+        
+        data, mask = self.collate_fn(artificial_data)
+        
         
         # Convert the data and masks to tensors
-        data_tensor = torch.stack(artificial_data)  # Shape: [batch_size, sequence_len, features]
-        mask_tensor = torch.stack(artificial_masks)  # Shape: [batch_size, sequence_len, features]
+        data_tensor = torch.stack(data)  # Shape: [batch_size, sequence_len, features]
+        mask_tensor = torch.stack(mask)  # Shape: [batch_size, sequence_len, features]
+        
+        print("Shape data: ", data_tensor.shape)
+        print("Shape mask: ", mask_tensor)
         
         # Combine data and mask into a single tensor with an extra dimension
         #combined_tensor = torch.stack([data_tensor, mask_tensor], dim=1)  # Shape: [batch_size, 2, sequence_len, features]
@@ -57,3 +87,6 @@ class SynchronizedDataset(Dataset):
         ### Abbasso l'annotation.txt
 
         return data_tensor,mask_tensor
+    
+
+

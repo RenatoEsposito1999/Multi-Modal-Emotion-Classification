@@ -132,7 +132,7 @@ class EEGTransformerEncoder(nn.Module):
         super(EEGTransformerEncoder, self).__init__()
         self.d_model = d_model
 
-        self.feature_projection = nn.Linear(input_features, d_model)
+        #self.feature_projection = nn.Linear(input_features, d_model)
 
         # Transformer encoder layers
         encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=num_heads, batch_first=True)
@@ -147,16 +147,16 @@ class EEGTransformerEncoder(nn.Module):
             x: Tensor of shape (batch_size, sequence_length, d_features)
         """
 
-        x = self.feature_projection(x) # x : [batchsize, sequence_length,d_model]
+        #x = self.feature_projection(x) # x : [batchsize, sequence_length,d_model]
 
         positional_encoding = self._generate_positional_encoding(x.size(1), self.d_model)
-
+        positional_encoding = positional_encoding.to("cuda")
         # Add positional encoding
-        x = x + self.positional_encoding[:,:x.size(1),:]
+        x = x + positional_encoding[:,:x.size(1),:]
 
         # Pass through transformer encoder
         
-        #mask = mask==0
+        mask = mask==0
         x = self.transformer_encoder(x, src_key_padding_mask=mask)
 
         # Return the final embedding

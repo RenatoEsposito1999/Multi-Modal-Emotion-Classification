@@ -26,6 +26,7 @@ class EEGDataset(Dataset):
                     parts = file_path.split("_")
                     label = parts[-1].split(".")[0]
                     self.labels.append(int(label))
+        
             
  
     def __len__(self):

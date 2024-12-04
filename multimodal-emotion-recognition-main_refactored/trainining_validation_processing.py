@@ -1,6 +1,6 @@
 from datasets.generate_dataset_RAVDESS import get_training_set_RAVDESS, get_validation_set_RAVDESS
 from datasets.generate_dataset_EEG import get_training_set_EEG, get_validation_set_EEG
-from datasets.synchronized_data import Synchronized_data
+from Data_preprocessing.synchronized_data_backup import Synchronized_data
 from utils.logger import Logger
 from train import train_epoch_multimodal
 from validation import val_epoch_multimodal
