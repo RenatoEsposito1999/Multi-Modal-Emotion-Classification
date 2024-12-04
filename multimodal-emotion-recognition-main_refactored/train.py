@@ -48,11 +48,11 @@ def train_epoch_multimodal(epoch, data_loader_audio_video, model, criterion_loss
     
         audio_inputs, visual_inputs, targets = item1
         
-        eeg_inputs, mask_inputs = EEGData_train.generate_artificial_batch(targets)
+        eeg_inputs, mask_inputs = EEGData_train.generate_artificial_batch(targets) # tensor shape [batch_size,seq_len,features]
         
         
-        mask_inputs = torch.stack(mask_inputs)
-        eeg_inputs = torch.stack(eeg_inputs)
+        #mask_inputs = torch.stack(mask_inputs)
+        #eeg_inputs = torch.stack(eeg_inputs)
 
         
         targets = targets.to(opt.device)

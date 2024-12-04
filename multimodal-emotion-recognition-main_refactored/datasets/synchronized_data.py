@@ -51,13 +51,9 @@ class SynchronizedDataset(Dataset):
         mask_tensor = torch.stack(artificial_masks)  # Shape: [batch_size, sequence_len, features]
         
         # Combine data and mask into a single tensor with an extra dimension
-        combined_tensor = torch.stack([data_tensor, mask_tensor], dim=1)  # Shape: [batch_size, 2, sequence_len, features]
+        #combined_tensor = torch.stack([data_tensor, mask_tensor], dim=1)  # Shape: [batch_size, 2, sequence_len, features]
         
 
-        ## Access data_tensor: combined_tensor [:,0,:,:]
-        ## Access mask_tensor first element: [0,1,:,:]
-
         ### Abbasso l'annotation.txt
-        #test now
 
-        return combined_tensor
+        return data_tensor,mask_tensor

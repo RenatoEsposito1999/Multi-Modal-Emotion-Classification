@@ -55,9 +55,13 @@ class MultimodalTransformer(nn.Module):
         #proj_x_eeg = self.EEG_preprocessing.forward(x_eeg)
         
         eeg_pooled = self.EEG_Transformer.forward(x_eeg, mask)
+
+        print("eeg_pooled",eeg_pooled)
         
         concat_audio_video_eeg = torch.cat((audio_pooled, video_pooled, eeg_pooled), dim=-1)
         
+        print("concatenzione",concat_audio_video_eeg)
+
         logits_output = self.classifier(concat_audio_video_eeg)
         
         return logits_output

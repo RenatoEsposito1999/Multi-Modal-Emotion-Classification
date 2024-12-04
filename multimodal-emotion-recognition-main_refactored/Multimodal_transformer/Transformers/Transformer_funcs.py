@@ -128,7 +128,7 @@ class AttentionBlock(nn.Module):
         return x
 
 class EEGTransformerEncoder(nn.Module):
-    def __init__(self, input_features, d_model=128, num_heads=8, num_layers=4):
+    def __init__(self, input_features=14, d_model=128, num_heads=8, num_layers=4):
         super(EEGTransformerEncoder, self).__init__()
         self.d_model = d_model
 
@@ -158,7 +158,6 @@ class EEGTransformerEncoder(nn.Module):
         
         #mask = mask==0
         x = self.transformer_encoder(x, src_key_padding_mask=mask)
-        
 
         # Return the final embedding
         return x.mean(dim=1)  # Aggregates across time steps to get a fixed-size embedding
