@@ -58,5 +58,6 @@ class SynchronizedDataset(Dataset):
         ## Access mask_tensor first element: [0,1,:,:]
 
         ### Abbasso l'annotation.txt
+        #test now
 
         return combined_tensor
