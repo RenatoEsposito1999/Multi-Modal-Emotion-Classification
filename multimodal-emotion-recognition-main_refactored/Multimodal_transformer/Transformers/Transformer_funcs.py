@@ -139,7 +139,7 @@ class EEGTransformerEncoder(nn.Module):
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
         
 
-    def forward(self, x, mask):
+    def forward(self, x, mask, device):
         """
         Forward pass for the EEG Transformer Encoder model.
 
@@ -150,14 +150,17 @@ class EEGTransformerEncoder(nn.Module):
         #x = self.feature_projection(x) # x : [batchsize, sequence_length,d_model]
 
         positional_encoding = self._generate_positional_encoding(x.size(1), self.d_model)
-        positional_encoding = positional_encoding.to("cuda")
+        positional_encoding = positional_encoding.to(device)
         # Add positional encoding
         x = x + positional_encoding[:,:x.size(1),:]
 
         # Pass through transformer encoder
         
-        mask = mask==0
-        x = self.transformer_encoder(x, src_key_padding_mask=mask)
+        if mask is not None:
+            mask = mask==0
+            x = self.transformer_encoder(x, src_key_padding_mask=mask)
+        else:
+            x = self.transformer_encoder(x)
 
         # Return the final embedding
         return x.mean(dim=1)  # Aggregates across time steps to get a fixed-size embedding

@@ -123,8 +123,6 @@ def preprocess_frame(frame, input_size=(224, 224), video_norm_value=None):
     ])'''
     frame = cv2.resize(frame, input_size)
     video_transform = transforms.Compose([
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomRotate(),
                 transforms.ToTensor(video_norm_value)])
     
     return video_transform(frame)
@@ -137,10 +135,7 @@ def preprocessing_audio_video(data_path, video_norm_value=None, batch_size=1):
     visual_input_batch = loader(video_npy)
     #VIDEO
     video_transform = transforms.Compose([
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomRotate(),
                 transforms.ToTensor(video_norm_value)])
-    video_transform.randomize_parameters()
     clip = [video_transform(img) for img in visual_input_batch]            
     clip = torch.stack(clip, 0).permute(1, 0, 2, 3)
     #AUDIO

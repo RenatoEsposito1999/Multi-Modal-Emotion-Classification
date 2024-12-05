@@ -9,14 +9,11 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
-import pickle
-
 
 from opts import parse_opts
 from trainining_validation_processing import training_validation_processing
 from testing_processing import testing_processing
 from Multimodal_transformer.MultimodalTransformer import MultimodalTransformer
-from Data_preprocessing import eeg_preprocessing
 from datasets.eeg_dataset import EEGDataset
 from predict import predict
 
@@ -55,13 +52,13 @@ if __name__ == '__main__':
     #eeg_preprocessing.preprocess(opt.eeg_dataset_path, opt)
     EEGDataset_complete = EEGDataset(opt.eeg_dataset_path, 14)
     
-    #train_split_eeg, validation_split_eeg, test_split_eeg = torch.utils.data.random_split(EEGDataset_complete, [756, 216, 108])
+    total_size_dataset = len(EEGDataset_complete)
+    size_training = int(0.7 * total_size_dataset) #70% of complete dataset
+    size_validation = int(0.2 * total_size_dataset) #20% of complete dataset
+    size_test = total_size_dataset - size_training - size_validation #10% of complete dataset
     
-    train_split_eeg, validation_split_eeg, test_split_eeg = torch.utils.data.random_split(EEGDataset_complete, [10, 962, 108])
-     
-    '''dataloader_training_eeg = DataLoader(train_split_eeg, batch_size=opt.batch_size, shuffle=True)
-    dataloader_val_eeg = DataLoader(validation_split_eeg, batch_size=opt.batch_size, shuffle=True)
-    dataloader_test_eeg = DataLoader(test_split_eeg, batch_size=opt.batch_size, shuffle=True)'''
+    #Split the complete dataset into three subsets: Training, Validation, Testing
+    train_split_eeg, validation_split_eeg, test_split_eeg = torch.utils.data.random_split(EEGDataset_complete, [size_training, size_validation , size_test])
     
     #Training-Validation Phase
     if not opt.no_train or not opt.no_val:
@@ -69,10 +66,10 @@ if __name__ == '__main__':
 
     # Testing Phase       
     if opt.test:
-        testing_processing(opt, model, criterion_loss)
+        testing_processing(opt, model, criterion_loss, test_split_eeg)
         
     if opt.predict:
-        predict(opt, model)
+        predict(opt, model, test_split_eeg)
         
 
             

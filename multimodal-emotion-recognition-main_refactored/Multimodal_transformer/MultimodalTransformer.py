@@ -31,11 +31,7 @@ class MultimodalTransformer(nn.Module):
                     nn.Linear(self.embeds_dim*3, num_classes),
                 )
         
-        self.softmax = nn.Softmax(dim=1)
-        
-        
-        
-    def forward(self,x_audio,x_visual,x_eeg, mask):
+    def forward(self,x_audio,x_visual,x_eeg, mask, device):
 
         x_audio = self.audio_preprocessing.forward_stage1(x_audio)
         proj_x_a = self.audio_preprocessing.forward_stage2(x_audio)
@@ -54,7 +50,7 @@ class MultimodalTransformer(nn.Module):
         video_pooled = h_va.mean([1])
         proj_x_eeg, proj_mask = self.EEG_preprocessing.forward(x_eeg, mask)
         
-        eeg_pooled = self.EEG_Transformer.forward(proj_x_eeg, proj_mask)
+        eeg_pooled = self.EEG_Transformer.forward(proj_x_eeg, proj_mask, device)
 
         concat_audio_video_eeg = torch.cat((audio_pooled, video_pooled, eeg_pooled), dim=-1)
         

@@ -1,35 +1,40 @@
 import torch
 from Data_preprocessing import input_preprocessing_predict
-from datasets import generate_dataset_EEG, synchronized_data
+from datasets.synchronized_data import Synchronized_data
+
+label_list = ["Neutral", "Happy", "Angry", "Sad"]
+
+video_audio_path="./raw_data_video/happy_wrong.mp4"
 
 
-video_audio_path="./raw_data_video/angry_wrong.mp4"
-
-
-def predict(opt, model):
-    model.eval()
+def predict(opt, model, test_split):
     
     #load best state, there are two file pth for separating if the machine hase cuda or not
     if(opt.device=="cuda"):
         best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name)+'.pth')
     else:
-        best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name)+'_cpu_.pth', map_location="cpu")
-        
+        best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name)+'_cpu_.pth', map_location=torch.device("cpu"))
+    model.eval()
+    torch.set_num_threads(1)
     #Load the weigths on the model
     model.load_state_dict(best_state['state_dict'])
     
-    
     audio_var, video_var = input_preprocessing_predict.preprocessing_audio_video(video_audio_path,video_norm_value=opt.video_norm_value, batch_size=1)
     
-    eeg_test = generate_dataset_EEG.get_test_set_EEG()
+    eeg_test = Synchronized_data(test_split)
+    #eeg_var, _ = eeg_test.generate_artificial_batch([1])
     
-    eeg_test = synchronized_data.Synchronized_data(eeg_test)
+    eeg_var = torch.load("1.pth")
     
-    eeg_var = torch.stack(eeg_test.generate_artificial_batch([1]))
     
     with torch.no_grad():
-        output = model(x_audio=audio_var, x_visual=video_var, x_eeg=eeg_var)
-    print("[LOGITS] Output: ", output)
+        output_logits = model(x_audio=audio_var, x_visual=video_var, x_eeg=eeg_var, mask=None, device=opt.device)
+    
+    
+    softmax_output = torch.nn.functional.softmax(output_logits, dim=1)
+    max_value, max_index = torch.max(softmax_output, dim=1)
+    print(max_value, max_index)
+    print(f"Max Value: {max_value}, Label: {label_list[max_index.item()]}")
     
     
     

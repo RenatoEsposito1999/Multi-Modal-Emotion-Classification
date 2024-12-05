@@ -7,11 +7,25 @@ import time
 from utils.average_meter import AverageMeter
 from utils.precision import calculate_precision
 
+'''
+This function perform the validation for the i-th epoch.
+    
+Args:
+    -EEGData_val: is the structure for having the batch syncronized with the batch of audio-video
+    -epoch: the i-th epoch
+    -data_loader_audio_video: this is the data_loader for audio video
+    -model: the model that want to train
+    -criterion_loss: the loss
+    -opt: all the arguments
+    -logger: for saving information about the validation into a file log
+    
+        
+Returns:
+    None
 
-def val_epoch_multimodal(EEGData_val, epoch, data_loader, model, criterion, opt, logger,dist=None):
-    #for evaluation with single modality, specify which modality to keep and which distortion to apply for the other modaltiy:
-    #'noise', 'addnoise' or 'zeros'. for paper procedure, with 'softhard' mask use 'zeros' for evaluation, with 'noise' use 'noise'
-    print('validation at epoch {}'.format(epoch))   
+'''
+
+def val_epoch_multimodal(EEGData_val, epoch, data_loader, model, criterion, opt, logger,dist=None):   
     model.eval()
 
     batch_time = AverageMeter()
@@ -29,8 +43,6 @@ def val_epoch_multimodal(EEGData_val, epoch, data_loader, model, criterion, opt,
         inputs_audio, inputs_visual, targets = item1
         
         EEG_inputs, mask_inputs = EEGData_val.generate_artificial_batch(targets)
-        #EEG_inputs = torch.stack(EEG_inputs)
-        
      
         targets = targets.to(opt.device)
         EEG_inputs = EEG_inputs.to(opt.device)
@@ -47,7 +59,7 @@ def val_epoch_multimodal(EEGData_val, epoch, data_loader, model, criterion, opt,
             mask_inputs = Variable(mask_inputs)
             
         
-        logits_output  = model(inputs_audio, inputs_visual, EEG_inputs, mask_inputs)
+        logits_output  = model(inputs_audio, inputs_visual, EEG_inputs, mask_inputs, opt.device)
           
         total_loss = criterion(logits_output, targets)
 

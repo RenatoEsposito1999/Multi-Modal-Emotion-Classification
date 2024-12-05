@@ -1,12 +1,10 @@
 from datasets.generate_dataset_RAVDESS import get_test_set_RAVDESS
-from datasets.generate_dataset_EEG import get_test_set_EEG
 from utils.logger import Logger
 from datasets.synchronized_data import Synchronized_data
 from validation import val_epoch_multimodal
 from utils import transforms
 import os
 import torch
-
 
 '''
     This is a function to prepare all the data to perform the testing. 
@@ -21,7 +19,7 @@ import torch
         none
 '''
 
-def testing_processing(opt, model, criterion_loss):
+def testing_processing(opt, model, criterion_loss, test_set_split):
     #Prepare the logger in which store the information
     test_logger = Logger(
         os.path.join(opt.result_path, 'test.log'), ['epoch', 'loss', 'prec1'])
@@ -42,12 +40,9 @@ def testing_processing(opt, model, criterion_loss):
         num_workers=opt.n_threads,
         pin_memory=True)
     
-    #Generate the test set for EEG
-    EEGDataset_test = get_test_set_EEG()
-    
     #This is used to pick randomly data synchronized with the batch of audio-video set, this because the number of data
     #of EEG is so smaller respect to video-audio data
-    EEGData_test = Synchronized_data(EEGDataset_test)
+    EEGData_test = Synchronized_data(test_set_split)
             
     #load best state, there are two file pth for separating if the machine hase cuda or not
     if(opt.device=="cuda"):
@@ -60,6 +55,7 @@ def testing_processing(opt, model, criterion_loss):
         
     
     #Compute the testing
+    print('testing, final epoch: {}'.format(best_state["epoch"])) 
     test_loss, prec1 = val_epoch_multimodal(EEGData_test, best_state["epoch"], test_loader_audio_video, model, criterion_loss, opt, test_logger)
     
     #Save information into a file text

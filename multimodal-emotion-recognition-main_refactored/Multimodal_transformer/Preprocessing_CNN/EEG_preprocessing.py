@@ -32,5 +32,6 @@ class EEGCNNPreprocessor(nn.Module):
 
         reduced_length = x.shape
         # Downsample mask to match the reduced sequence length
-        mask = mask[:, ::8]
+        if mask is not None:
+            mask = mask[:, ::8]
         return x,mask

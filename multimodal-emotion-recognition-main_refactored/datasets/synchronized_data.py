@@ -1,25 +1,40 @@
 import torch
-from torch.utils.data import Dataset
-import random
 import numpy as np
 
-class Synchronized_data(Dataset):
-    def __init__(self, dataloader):
-        """
-        Initialize the dataset by storing combined data and masks for each label.
+
+class Synchronized_data():
+    def __init__(self, dataset):
+        self.complete_dataset = self.split_dataset(dataset) #return list of datasets splitted by labels
         
+        
+    def split_dataset(self, dataset):
+        """
+        Splits a dataset into separate datasets based on labels.
+    
         Args:
-            dataloader (torch.utils.data.DataLoader): Input dataloader.
+            dataset (Dataset): A dataset object with labeled data.
+    
+        Returns:
+            tuple: Four datasets corresponding to labels 0, 1, 2, and 3.
         """
-        # Dictionary to store (data, mask) tuples for each label
-        self.label_data = {0: [], 1: [], 2: [], 3: []}
+        # Initialize a dictionary to group indices by labels
+        label_dict = {0: [], 1: [], 2: [], 3: []}
+    
+        # Populate the dictionary with indices corresponding to each label
+        for index in range(len(dataset)):
+            _, label = dataset[index]
+            label_dict[label.item()].append(index)  # Use .item() to get the integer value from the tensor
+    
+        # Create separate datasets for each label
+        dataset_0 = torch.utils.data.Subset(dataset, label_dict[0])
+        dataset_1 = torch.utils.data.Subset(dataset, label_dict[1])
+        dataset_2 = torch.utils.data.Subset(dataset, label_dict[2])
+        dataset_3 = torch.utils.data.Subset(dataset, label_dict[3])
         
-        # Populate the label_data dictionary
-        for batch_data, labels in dataloader:
-            for i in range(len(labels)):
-                label = labels[i].item()
-                self.label_data[label].append(batch_data[i])
-                
+        complete_dataset = [dataset_0, dataset_1, dataset_2, dataset_3]
+        
+        return complete_dataset 
+    
     def pad_and_mask(self, sequence, max_length):
         """
         Pad a single sequence to the given max_length and create a mask.
@@ -46,47 +61,11 @@ class Synchronized_data(Dataset):
         return padded_data, masks
     
     def generate_artificial_batch(self, labels):
-        """
-        Generate an artificial batch based on specified labels.
-        A single sample is selected randomly for each label.
-        
-        Args:
-            labels (list): List of label indices to sample from.
-        
-        Returns:
-            Tensor: A tensor of shape [batch_size, 2, sequence_len, features], where:
-                    - dim 1 = 0 contains the data.
-                    - dim 1 = 1 contains the masks.
-        """
-        artificial_data = []
-        
-        for label in labels:
-            print(type(label.item()))
-            print(label.item())
-            if not self.label_data[label.item()]:
-                raise ValueError(f"No data available for label {label}")
-            
-            # Randomly select one data point for this label
-            random_data = random.choice(self.label_data[label.item()])
-            artificial_data.append(random_data)
-        
-        data, mask = self.collate_fn(artificial_data)
-        
-        
-        # Convert the data and masks to tensors
-        data_tensor = torch.stack(data)  # Shape: [batch_size, sequence_len, features]
-        mask_tensor = torch.stack(mask)  # Shape: [batch_size, sequence_len, features]
-        
-        print("Shape data: ", data_tensor.shape)
-        print("Shape mask: ", mask_tensor)
-        
-        # Combine data and mask into a single tensor with an extra dimension
-        #combined_tensor = torch.stack([data_tensor, mask_tensor], dim=1)  # Shape: [batch_size, 2, sequence_len, features]
-        
-
-        ### Abbasso l'annotation.txt
-
-        return data_tensor,mask_tensor
-    
-
-
+        batch = []
+        for i in labels:
+            selection_list = self.complete_dataset[i]
+            random_index = torch.randint(0, len(selection_list), (1,)).item()  # Get a random index
+            random_element = selection_list[random_index][0]# Access the random element
+            batch.append(random_element)
+        padded_data, masks = self.collate_fn(batch)
+        return padded_data, masks
