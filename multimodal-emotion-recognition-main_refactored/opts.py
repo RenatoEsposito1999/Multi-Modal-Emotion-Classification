@@ -30,7 +30,7 @@ def parse_opts():
     parser.add_argument('--dampening', default=0.9, type=float, help='dampening of SGD')
     parser.add_argument('--weight_decay', default=1e-3, type=float, help='Weight Decay')
     parser.add_argument('--lr_patience', default=10, type=int, help='Patience of LR scheduler. See documentation of ReduceLROnPlateau.')
-    parser.add_argument('--batch_size', default=2, type=int, help='Batch Size')
+    parser.add_argument('--batch_size', default=1, type=int, help='Batch Size')
     parser.add_argument('--n_epochs', default=100, type=int, help='Number of total epochs to run')
     
     parser.add_argument('--begin_epoch', default=1, type=int, help='Training begins at this epoch. Previous trained model indicated by resume_path is loaded.')

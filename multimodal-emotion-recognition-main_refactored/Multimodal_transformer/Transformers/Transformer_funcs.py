@@ -132,38 +132,33 @@ class EEGTransformerEncoder(nn.Module):
         super(EEGTransformerEncoder, self).__init__()
         self.d_model = d_model
 
-        #self.feature_projection = nn.Linear(input_features, d_model)
-
         # Transformer encoder layers
-        encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=num_heads, batch_first=True)
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model, nhead=num_heads, batch_first=True
+        )
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
         
+        self.positional_scaling = nn.Parameter(torch.ones(1))
+        
 
-    def forward(self, x, mask, device):
+    def forward(self, x, device):
         """
         Forward pass for the EEG Transformer Encoder model.
 
         Args:
             x: Tensor of shape (batch_size, sequence_length, d_features)
         """
-
-        #x = self.feature_projection(x) # x : [batchsize, sequence_length,d_model]
-
-        positional_encoding = self._generate_positional_encoding(x.size(1), self.d_model)
-        positional_encoding = positional_encoding.to(device)
-        # Add positional encoding
-        x = x + positional_encoding[:,:x.size(1),:]
+        # Generate and scale positional encoding
+        positional_encoding = self._generate_positional_encoding(x.size(1), self.d_model).to(device)
+       
+        x = x + self.positional_scaling * positional_encoding[:, :x.size(1), :]
 
         # Pass through transformer encoder
-        
-        if mask is not None:
-            mask = mask==0
-            x = self.transformer_encoder(x, src_key_padding_mask=mask)
-        else:
-            x = self.transformer_encoder(x)
+        x = self.transformer_encoder(x)
 
-        # Return the final embedding
-        return x.mean(dim=1)  # Aggregates across time steps to get a fixed-size embedding
+        # Apply pooling (instead of mean)
+        pooled_output = x.mean(dim=1)  # Mean pooling
+        return pooled_output
 
     def _generate_positional_encoding(self, length, d_model):
         """

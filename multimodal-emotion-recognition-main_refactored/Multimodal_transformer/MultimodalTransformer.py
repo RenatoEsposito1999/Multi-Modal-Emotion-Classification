@@ -26,12 +26,20 @@ class MultimodalTransformer(nn.Module):
         self.va = AttentionBlock(in_dim_k=self.input_dim_audio, in_dim_q=self.input_dim_video, out_dim=self.embeds_dim, num_heads=num_heads)
 
         self.EEG_Transformer = EEGTransformerEncoder(d_model=self.embeds_dim,num_heads=num_heads)
-
-        self.classifier = nn.Sequential(
-                    nn.Linear(self.embeds_dim*3, num_classes),
-                )
         
-    def forward(self,x_audio,x_visual,x_eeg, mask, device):
+        self.Layer_norm = nn.LayerNorm([1,self.embeds_dim*3])
+
+        '''self.classifier = nn.Sequential(
+                    nn.Linear(self.embeds_dim*3, num_classes),
+                )'''
+        self.classifier = nn.Sequential(
+                nn.Linear(self.embeds_dim*3, 512),  # Increase intermediate size
+                nn.ReLU(),
+                nn.Dropout(0.5),  # Regularization
+                nn.Linear(512, num_classes),
+            )
+        
+    def forward(self,x_audio,x_visual,x_eeg, device):
 
         x_audio = self.audio_preprocessing.forward_stage1(x_audio)
         proj_x_a = self.audio_preprocessing.forward_stage2(x_audio)
@@ -48,12 +56,14 @@ class MultimodalTransformer(nn.Module):
 
         audio_pooled = h_av.mean([1]) #mean accross temporal dimension
         video_pooled = h_va.mean([1])
-        proj_x_eeg, proj_mask = self.EEG_preprocessing.forward(x_eeg, mask)
-        
-        eeg_pooled = self.EEG_Transformer.forward(proj_x_eeg, proj_mask, device)
+        proj_x_eeg= self.EEG_preprocessing.forward(x_eeg)
+          
+        eeg_pooled = self.EEG_Transformer.forward(proj_x_eeg, device)
 
         concat_audio_video_eeg = torch.cat((audio_pooled, video_pooled, eeg_pooled), dim=-1)
+        concat_audio_video_eeg = concat_audio_video_eeg.to(device)
         
-        logits_output = self.classifier(concat_audio_video_eeg)
         
+        cat_normalized = self.Layer_norm(concat_audio_video_eeg)
+        logits_output = self.classifier(cat_normalized)
         return logits_output

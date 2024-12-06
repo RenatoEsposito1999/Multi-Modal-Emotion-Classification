@@ -33,7 +33,7 @@ if __name__ == '__main__':
     opt.store_name = '_'.join([opt.dataset, opt.model, str(opt.sample_duration)])
                       
   
-    torch.manual_seed(opt.manual_seed)
+    #torch.manual_seed(opt.manual_seed)
     model = MultimodalTransformer(opt.n_classes, seq_length = opt.sample_duration, pretr_ef=opt.pretrain_path, num_heads=opt.num_heads)
 
     if opt.device != 'cpu':
