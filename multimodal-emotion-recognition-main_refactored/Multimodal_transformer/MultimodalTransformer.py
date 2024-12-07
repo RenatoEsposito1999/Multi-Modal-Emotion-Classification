@@ -63,7 +63,7 @@ class MultimodalTransformer(nn.Module):
         concat_audio_video_eeg = torch.cat((audio_pooled, video_pooled, eeg_pooled), dim=-1)
         concat_audio_video_eeg = concat_audio_video_eeg.to(device)
         
-        
         cat_normalized = self.Layer_norm(concat_audio_video_eeg)
+        
         logits_output = self.classifier(cat_normalized)
         return logits_output

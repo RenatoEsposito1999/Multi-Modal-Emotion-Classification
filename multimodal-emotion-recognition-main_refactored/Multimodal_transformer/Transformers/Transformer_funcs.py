@@ -128,37 +128,41 @@ class AttentionBlock(nn.Module):
         return x
 
 class EEGTransformerEncoder(nn.Module):
-    def __init__(self, input_features=14, d_model=128, num_heads=8, num_layers=4):
+    #(Idea): Reduce heads in the transformer to concentrate the attention
+    def __init__(self, input_features=14, d_model=128, num_heads=4, num_layers=4):
         super(EEGTransformerEncoder, self).__init__()
         self.d_model = d_model
 
+        #self.feature_projection = nn.Linear(input_features, d_model)
+
         # Transformer encoder layers
-        encoder_layer = nn.TransformerEncoderLayer(
-            d_model=d_model, nhead=num_heads, batch_first=True
-        )
+        encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=num_heads, batch_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
         
-        self.positional_scaling = nn.Parameter(torch.ones(1))
-        
 
-    def forward(self, x, device):
+    def forward(self, x, mask, device):
         """
         Forward pass for the EEG Transformer Encoder model.
 
         Args:
             x: Tensor of shape (batch_size, sequence_length, d_features)
         """
-        # Generate and scale positional encoding
-        positional_encoding = self._generate_positional_encoding(x.size(1), self.d_model).to(device)
-       
-        x = x + self.positional_scaling * positional_encoding[:, :x.size(1), :]
+
+        #x = self.feature_projection(x) # x : [batchsize, sequence_length,d_model]
+
+        #positional_encoding = self._generate_positional_encoding(x.size(1), self.d_model)
+        #positional_encoding = positional_encoding.to(device)
+        # Add positional encoding
+        #x = x + positional_encoding[:,:x.size(1),:]
+
+        #(Idea): positional encoding could affect the learning, testing is necessary
 
         # Pass through transformer encoder
+        
         x = self.transformer_encoder(x)
 
-        # Apply pooling (instead of mean)
-        pooled_output = x.mean(dim=1)  # Mean pooling
-        return pooled_output
+        # Return the final embedding
+        return x.mean(dim=1)  # Aggregates across time steps to get a fixed-size embedding
 
     def _generate_positional_encoding(self, length, d_model):
         """
