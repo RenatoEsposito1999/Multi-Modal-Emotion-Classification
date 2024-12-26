@@ -30,7 +30,7 @@ def parse_opts():
     parser.add_argument('--dampening', default=0.9, type=float, help='dampening of SGD')
     parser.add_argument('--weight_decay', default=1e-3, type=float, help='Weight Decay')
     parser.add_argument('--lr_patience', default=10, type=int, help='Patience of LR scheduler. See documentation of ReduceLROnPlateau.')
-    parser.add_argument('--batch_size', default=1, type=int, help='Batch Size')
+    parser.add_argument('--batch_size', default=8, type=int, help='Batch Size')
     parser.add_argument('--n_epochs', default=100, type=int, help='Number of total epochs to run')
     
     parser.add_argument('--begin_epoch', default=1, type=int, help='Training begins at this epoch. Previous trained model indicated by resume_path is loaded.')
@@ -41,8 +41,8 @@ def parse_opts():
     parser.add_argument('--no_val', action='store_true', help='If true, validation is not performed.')
     parser.set_defaults(no_val=False)
     parser.add_argument('--test', action='store_true', help='If true, test is performed.')
-    parser.set_defaults(test=False)
-    parser.add_argument('--predict', action='store_true', help='If true, predict is not performed.')
+    parser.set_defaults(test=True)
+    parser.add_argument('--predict', action='store_true', help='If true, predict is performed.')
     parser.set_defaults(predict=False)
     
     parser.add_argument('--test_subset', default='test', type=str, help='Used subset in test (val | test)')
@@ -52,9 +52,7 @@ def parse_opts():
 
     parser.add_argument('--manual_seed', default=1, type=int, help='Manually set random seed')
     parser.add_argument('--fusion', default='lt', type=str, help='fusion type: lt | it | ia')
-    parser.add_argument('--mask', type=str, help='dropout type : softhard | noise | nodropout', default='nodropout')
-
-    parser.add_argument('--eeg_dataset_path',type=str,help='define path to EEG dataset',default='error: insert path for eeg')
+    parser.add_argument('--mask', type=str, help='dropout type : softhard | noise | nodropout', default='softhard')
     parser.add_argument('--video_audio_dataset_path',type=str,help='define path to dataset for audio and video',default='error: insert path for videos')
     args = parser.parse_args()
 

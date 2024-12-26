@@ -18,49 +18,45 @@ from utils.precision import calculate_precision
         -optimizer: the algortithm choosen to udate the weigths
         -opt: all the arguments
         -epoch_logger: save in file log the information about i-th epoch
-        -batch_logger: save in file log the information about the batch
-        -EEGData_train: is the structure for having the batch syncronized with the batch of audio-video
-        
+        -batch_logger: save in file log the information about the batch    
     Returns:
         None
-
 '''
+
+
+
 def train_epoch_multimodal(epoch, data_loader_audio_video, model, criterion_loss, optimizer, opt,
-                epoch_logger, batch_logger, EEGData_train):
+                epoch_logger, batch_logger):
     print('train at epoch {}'.format(epoch))
 
     model.train()
 
-    #All the metrics used to compute the avarage of the loss and precision
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses_avarage = AverageMeter()
     prec1_avarage = AverageMeter()
  
+        
     end_time = time.time()
-    
-    
-    
+ 
     for i, item1 in enumerate(data_loader_audio_video):
         data_time.update(time.time() - end_time)
-
+    
         audio_inputs, visual_inputs, targets = item1
         
-        eeg_inputs, mask_inputs = EEGData_train.generate_artificial_batch(targets) # tensor shape [batch_size,seq_len,features]
-         
+        if opt.mask is not None:
+            with torch.no_grad():   
+                if opt.mask == 'softhard':
+                    audio_inputs, visual_inputs, targets = apply_dropout(audio_inputs, visual_inputs, targets)
+
         visual_inputs = visual_inputs.permute(0,2,1,3,4)
         visual_inputs = visual_inputs.reshape(visual_inputs.shape[0]*visual_inputs.shape[1], visual_inputs.shape[2], visual_inputs.shape[3], visual_inputs.shape[4])
         
         targets = targets.to(opt.device)
-        eeg_inputs = eeg_inputs.to(opt.device)
-        mask_inputs = mask_inputs.to(opt.device)
-        audio_inputs = Variable(audio_inputs)
-        visual_inputs = Variable(visual_inputs)
-        EEG_inputs=Variable(eeg_inputs)
-
-        targets = Variable(targets)
+        visual_inputs = visual_inputs.to(opt.device)
+        audio_inputs = audio_inputs.to(opt.device)
         
-        logits_output = model(audio_inputs, visual_inputs, EEG_inputs, opt.device)
+        logits_output = model(audio_inputs, visual_inputs)
        
         total_loss = criterion_loss(logits_output, targets)
                
@@ -69,7 +65,7 @@ def train_epoch_multimodal(epoch, data_loader_audio_video, model, criterion_loss
         losses_avarage.update(total_loss.data, opt.batch_size)
         prec1_avarage.update(prec1, opt.batch_size)
        
-        optimizer.zero_grad() 
+        optimizer.zero_grad()
         total_loss.backward()
         optimizer.step()
         
@@ -107,7 +103,22 @@ def train_epoch_multimodal(epoch, data_loader_audio_video, model, criterion_loss
     })
     
     
+def apply_dropout(audio_inputs, visual_inputs, targets):
+    coefficients = torch.randint(low=0, high=100,size=(audio_inputs.size(0),1,1))/100
+    vision_coefficients = 1 - coefficients
+    coefficients = coefficients.repeat(1,audio_inputs.size(1),audio_inputs.size(2))
+    vision_coefficients = vision_coefficients.unsqueeze(-1).unsqueeze(-1).repeat(1,visual_inputs.size(1), visual_inputs.size(2), visual_inputs.size(3), visual_inputs.size(4))
 
+    audio_inputs = torch.cat((audio_inputs, audio_inputs*coefficients, torch.zeros(audio_inputs.size()), audio_inputs), dim=0) 
+    visual_inputs = torch.cat((visual_inputs, visual_inputs*vision_coefficients, visual_inputs, torch.zeros(visual_inputs.size())), dim=0)   
+                    
+    targets = torch.cat((targets, targets, targets, targets), dim=0)
+    shuffle = torch.randperm(audio_inputs.size()[0])
+    audio_inputs = audio_inputs[shuffle]
+    visual_inputs = visual_inputs[shuffle]
+    targets = targets[shuffle]
+    
+    return audio_inputs, visual_inputs, targets
 
  
 

@@ -127,39 +127,32 @@ class AttentionBlock(nn.Module):
         x = x +  self.drop_path(self.mlp(self.norm2(x)))
         return x
 
-class EEGTransformerEncoder(nn.Module):
-    #(Idea): Reduce heads in the transformer to concentrate the attention
-    def __init__(self, input_features=14, d_model=128, num_heads=4, num_layers=4):
+'''class EEGTransformerEncoder(nn.Module):
+    def __init__(self, input_features=14, d_model=128, num_heads=8, num_layers=4):
         super(EEGTransformerEncoder, self).__init__()
         self.d_model = d_model
-
-        #self.feature_projection = nn.Linear(input_features, d_model)
 
         # Transformer encoder layers
         encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=num_heads, batch_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
         
 
-    def forward(self, x, mask, device):
+    def forward(self, x, mask):
         """
         Forward pass for the EEG Transformer Encoder model.
 
         Args:
             x: Tensor of shape (batch_size, sequence_length, d_features)
         """
-
-        #x = self.feature_projection(x) # x : [batchsize, sequence_length,d_model]
-
-        #positional_encoding = self._generate_positional_encoding(x.size(1), self.d_model)
-        #positional_encoding = positional_encoding.to(device)
+        positional_encoding = self._generate_positional_encoding(x.size(1), self.d_model)
+        positional_encoding = positional_encoding.to("cuda")
         # Add positional encoding
-        #x = x + positional_encoding[:,:x.size(1),:]
-
-        #(Idea): positional encoding could affect the learning, testing is necessary
+        x = x + positional_encoding[:,:x.size(1),:]
 
         # Pass through transformer encoder
         
-        x = self.transformer_encoder(x)
+        mask = mask==0
+        x = self.transformer_encoder(x, src_key_padding_mask=mask)
 
         # Return the final embedding
         return x.mean(dim=1)  # Aggregates across time steps to get a fixed-size embedding
@@ -175,4 +168,4 @@ class EEGTransformerEncoder(nn.Module):
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
         
-        return pe.unsqueeze(0)  # Add a batch dimension
+        return pe.unsqueeze(0)  # Add a batch dimension'''

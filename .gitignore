@@ -176,3 +176,4 @@ training_processing/annotations.txt
 multimodal-emotion-recognition-main_refactored/EEGTest.pkl
 multimodal-emotion-recognition-main_refactored/EEGTrain.pkl
 multimodal-emotion-recognition-main_refactored/EEGVal.pkl
+/audio_video_emotion_recognition_model/results

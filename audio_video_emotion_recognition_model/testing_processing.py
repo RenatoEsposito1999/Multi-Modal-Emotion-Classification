@@ -1,10 +1,13 @@
 from datasets.generate_dataset_RAVDESS import get_test_set_RAVDESS
 from utils.logger import Logger
-from datasets.synchronized_data import Synchronized_data
-from validation import val_epoch_multimodal
+from test import testing
 from utils import transforms
 import os
 import torch
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+
 
 '''
     This is a function to prepare all the data to perform the testing. 
@@ -19,7 +22,12 @@ import torch
         none
 '''
 
-def testing_processing(opt, model, criterion_loss, test_set_split):
+def testing_processing(opt, model, criterion_loss):
+    
+    if not os.path.exists("Image"):
+        os.makedirs("Image")
+        
+        
     #Prepare the logger in which store the information
     test_logger = Logger(
         os.path.join(opt.result_path, 'test.log'), ['epoch', 'loss', 'prec1'])
@@ -40,10 +48,6 @@ def testing_processing(opt, model, criterion_loss, test_set_split):
         num_workers=opt.n_threads,
         pin_memory=True)
     
-    #This is used to pick randomly data synchronized with the batch of audio-video set, this because the number of data
-    #of EEG is so smaller respect to video-audio data
-    EEGData_test = Synchronized_data(test_set_split)
-            
     #load best state, there are two file pth for separating if the machine hase cuda or not
     if(opt.device=="cuda"):
         best_state = torch.load('%s/%s_best' % (opt.result_path, opt.store_name)+'.pth')
@@ -55,9 +59,40 @@ def testing_processing(opt, model, criterion_loss, test_set_split):
         
     
     #Compute the testing
-    print('testing, final epoch: {}'.format(best_state["epoch"])) 
-    test_loss, prec1 = val_epoch_multimodal(EEGData_test, best_state["epoch"], test_loader_audio_video, model, criterion_loss, opt, test_logger)
-    
+    test_loss, prec1, prec1_list, prec1_avarage_list, predicted_labels, all_true_labels = testing(best_state["epoch"], test_loader_audio_video, model, criterion_loss, opt, test_logger)
     #Save information into a file text
     with open(os.path.join(opt.result_path, 'test_set_best.txt'), 'a') as f:
             f.write('Prec1: ' + str(prec1)+ '; Loss: ' + str(test_loss))
+            
+    plt.figure(figsize=(8, 6))
+    plt.plot(prec1_list, label='Test Precision', marker='o', linestyle='-')
+    plt.xlabel('Batches')
+    plt.ylabel('Precision')
+    plt.title('Test Precision')
+    plt.legend()
+    plt.grid()
+    plt.savefig('Image/test_precision.jpeg', format='jpeg') 
+    plt.close()
+    
+    
+    plt.figure(figsize=(8, 6))
+    plt.plot(prec1_avarage_list, label='Test Precision Avarage', marker='o', linestyle='-')
+    plt.xlabel('Batches')
+    plt.ylabel('Precision')
+    plt.title('Test Precision Avarages')
+    plt.legend()
+    plt.grid()
+    plt.savefig('Image/test_precision_avarage.jpeg', format='jpeg') 
+    plt.close()
+    
+    cm = confusion_matrix(all_true_labels, predicted_labels)
+    # Usa Seaborn per plottare la confusion matrix
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Neutral', 'Happy', 'Angry', 'Sad'], yticklabels=['Neutral', 'Happy', 'Angry', 'Sad'])
+    plt.xlabel('Predicted Labels')
+    plt.ylabel('True Labels')
+    plt.title('Confusion Matrix')
+    plt.savefig('Image/Confusion_matrix.jpeg', format='jpeg')
+    plt.close()
+    
+    

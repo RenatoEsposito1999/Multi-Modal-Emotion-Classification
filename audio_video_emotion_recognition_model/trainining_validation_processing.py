@@ -1,5 +1,4 @@
 from datasets.generate_dataset_RAVDESS import get_training_set_RAVDESS, get_validation_set_RAVDESS
-from datasets.synchronized_data import Synchronized_data
 from utils.logger import Logger
 from train import train_epoch_multimodal
 from validation import val_epoch_multimodal
@@ -10,7 +9,7 @@ import os
 
 
 import torch
-from torch import nn, optim
+from torch import optim
 from torch.optim import lr_scheduler
 '''
     This method create the all necessary for doing the training and validation.
@@ -19,14 +18,21 @@ from torch.optim import lr_scheduler
         -opt = Object that contains all the argument
         -model = It is the model (multimodal transformer)
         -criterion_loss = Is the loss defined.
-        -train_split_eeg = training set of EEG
-        -validation_split_eeg = validation set of EEG
     
     Returns:
         None
 
 '''
-def training_validation_processing(opt, model, criterion_loss, train_split_eeg, validation_split_eeg):
+
+def training_validation_processing(opt, model, criterion_loss):
+    
+    optimizer = optim.SGD(
+            model.parameters(),
+            lr=opt.learning_rate,
+            momentum=opt.momentum,
+            dampening=opt.dampening,
+            weight_decay=opt.weight_decay,
+            nesterov=False)
     
     if not opt.no_train:
     
@@ -46,10 +52,6 @@ def training_validation_processing(opt, model, criterion_loss, train_split_eeg, 
             num_workers=opt.n_threads,
             pin_memory=True)
         
-        #This is used to pick randomly data synchronized with the batch of audio-video set, this because the number of data
-        #of EEG is so smaller respect to video-audio data.
-        EEGData_train = Synchronized_data(train_split_eeg)
-        
         #Create two logger to save information about the training into a log file
         train_logger = Logger(
             os.path.join(opt.result_path, 'train.log'),
@@ -58,18 +60,8 @@ def training_validation_processing(opt, model, criterion_loss, train_split_eeg, 
             os.path.join(opt.result_path, 'train_batch.log'),
             ['epoch', 'batch', 'iter', 'loss', 'prec1', 'lr'])
         
-        #Create the optimizer, the algorithm choosen is Adam
-        optimizer = optim.Adam(
-                        model.parameters(),
-                        lr=opt.learning_rate,
-                        betas=(0.9, 0.98),
-                        eps=1e-9,
-                        weight_decay=opt.weight_decay,
-                        amsgrad=True
-                    )
-    
         #This is the scheduler in order to have a dynamic learning rate    
-        scheduler = lr_scheduler.StepLR(optimizer, 20, 0.1)
+        scheduler = lr_scheduler.StepLR(optimizer, 30, 0.1)
     
     if not opt.no_val:
     
@@ -87,10 +79,6 @@ def training_validation_processing(opt, model, criterion_loss, train_split_eeg, 
             num_workers=opt.n_threads,
             pin_memory=True)
         
-        #This is used to pick randomly data synchronized with the batch of audio-video set, this because the number of data
-        #of EEG is so smaller respect to video-audio data
-        EEGData_val = Synchronized_data(validation_split_eeg)
-           
         #Create a logger in order to save all information about the validation into a file log
         val_logger = Logger(
                 os.path.join(opt.result_path, 'val.log'), ['epoch', 'loss', 'prec1'])
@@ -107,6 +95,7 @@ def training_validation_processing(opt, model, criterion_loss, train_split_eeg, 
         model.load_state_dict(checkpoint['state_dict'])
         optimizer.load_state_dict(checkpoint["optimizer"])
                 
+
     #Start training and validation
     print("Starto il training lets go: ")
     for i in range(opt.begin_epoch, opt.n_epochs + 1):
@@ -114,7 +103,7 @@ def training_validation_processing(opt, model, criterion_loss, train_split_eeg, 
             if not opt.no_train:
                 #This perform the training
                 train_epoch_multimodal(i, train_loader_audio_video, model, criterion_loss, optimizer, opt,
-                            train_logger, train_batch_logger, EEGData_train)
+                            train_logger, train_batch_logger)
                 scheduler.step() #Update the learning rate
                 
                 #Create a state, this contains the information that must be saved into pth file
@@ -130,9 +119,8 @@ def training_validation_processing(opt, model, criterion_loss, train_split_eeg, 
                 save_checkpoint(state, model,  False, opt, train=True)
             
             if not opt.no_val:
-                #Perform the validation step
-                print('validation at epoch {}'.format(i))    
-                loss_validation , prec1 = val_epoch_multimodal(EEGData_val, i, val_loader_audio_video, model, criterion_loss, opt,
+                #Perform the validation step,     
+                loss_validation , prec1 = val_epoch_multimodal(i, val_loader_audio_video, model, criterion_loss, opt,
                                             val_logger)
                 
                 #Check if the current precision of the validation is better than the maximum precision obtained until now
@@ -142,6 +130,8 @@ def training_validation_processing(opt, model, criterion_loss, train_split_eeg, 
             
                 #Save the file pth    
                 save_checkpoint(None, model, is_best, opt, train=False)
+            
+            torch.cuda.empty_cache()
 
 
 
