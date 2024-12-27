@@ -135,8 +135,6 @@ def preprocessing_audio_video(data_path, video_norm_value=None, batch_size=1):
     visual_input_batch = loader(video_npy)
     #VIDEO
     video_transform = transforms.Compose([
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomRotate(),
                 transforms.ToTensor(video_norm_value)])
     video_transform.randomize_parameters()
     clip = [video_transform(img) for img in visual_input_batch]            
