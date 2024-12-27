@@ -1,12 +1,14 @@
+import sys
+
+sys.path.append("../Shared")
+
 from datasets.generate_dataset_RAVDESS import get_test_set_RAVDESS
 from utils.logger import Logger
 from test import testing
 from utils import transforms
 import os
 import torch
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
-import seaborn as sns
+from plot_data import plot_data, compute_confusion_matrix
 
 
 '''
@@ -59,40 +61,14 @@ def testing_processing(opt, model, criterion_loss):
         
     
     #Compute the testing
-    test_loss, prec1, prec1_list, prec1_avarage_list, predicted_labels, all_true_labels = testing(best_state["epoch"], test_loader_audio_video, model, criterion_loss, opt, test_logger)
+    test_loss, prec1, prec1_list, prec1_avarage_list,losses_avarage_list,  predicted_labels, all_true_labels = testing(best_state["epoch"], test_loader_audio_video, model, criterion_loss, opt, test_logger)
     #Save information into a file text
     with open(os.path.join(opt.result_path, 'test_set_best.txt'), 'a') as f:
             f.write('Prec1: ' + str(prec1)+ '; Loss: ' + str(test_loss))
             
-    plt.figure(figsize=(8, 6))
-    plt.plot(prec1_list, label='Test Precision', marker='o', linestyle='-')
-    plt.xlabel('Batches')
-    plt.ylabel('Precision')
-    plt.title('Test Precision')
-    plt.legend()
-    plt.grid()
-    plt.savefig('Image/test_precision.jpeg', format='jpeg') 
-    plt.close()
+    plot_data(prec1_avarage_list, "Image/test_accuracy.jpeg", "Test Accuracy", "accuracy", "batch")
+    plot_data(losses_avarage_list, "Image/test_loss.jpeg", "Test Loss", "loss", "batch")
     
-    
-    plt.figure(figsize=(8, 6))
-    plt.plot(prec1_avarage_list, label='Test Precision Avarage', marker='o', linestyle='-')
-    plt.xlabel('Batches')
-    plt.ylabel('Precision')
-    plt.title('Test Precision Avarages')
-    plt.legend()
-    plt.grid()
-    plt.savefig('Image/test_precision_avarage.jpeg', format='jpeg') 
-    plt.close()
-    
-    cm = confusion_matrix(all_true_labels, predicted_labels)
-    # Usa Seaborn per plottare la confusion matrix
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Neutral', 'Happy', 'Angry', 'Sad'], yticklabels=['Neutral', 'Happy', 'Angry', 'Sad'])
-    plt.xlabel('Predicted Labels')
-    plt.ylabel('True Labels')
-    plt.title('Confusion Matrix')
-    plt.savefig('Image/Confusion_matrix.jpeg', format='jpeg')
-    plt.close()
+    compute_confusion_matrix(all_true_labels, predicted_labels, "Image/confusion_matrix.jpeg")
     
     

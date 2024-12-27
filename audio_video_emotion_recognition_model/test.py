@@ -20,6 +20,7 @@ def testing(epoch, data_loader, model, criterion, opt, logger, dist=None):
     end_time = time.time()
     prec1_list = []
     prec1_avarage_list = []
+    losses_avarage_list = []
     predicted_labels = []
     all_true_labels = []
     
@@ -47,6 +48,7 @@ def testing(epoch, data_loader, model, criterion, opt, logger, dist=None):
         prec1 = calculate_precision(logits_output.data, targets.data)
         prec1_list.append(prec1.item())
         losses_avarage.update(total_loss.data, opt.batch_size)
+        losses_avarage_list.append(losses_avarage.avg.item())
         
         prec1_avarage.update(prec1, opt.batch_size)
         prec1_avarage_list.append(prec1_avarage.avg.item())
@@ -72,6 +74,6 @@ def testing(epoch, data_loader, model, criterion, opt, logger, dist=None):
     
     
 
-    return losses_avarage.avg.item(), prec1_avarage.avg.item(), prec1_list, prec1_avarage_list, predicted_labels, all_true_labels
+    return losses_avarage.avg.item(), prec1_avarage.avg.item(), prec1_list, prec1_avarage_list, losses_avarage_list, predicted_labels, all_true_labels
 
     
