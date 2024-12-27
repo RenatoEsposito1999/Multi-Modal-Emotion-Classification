@@ -123,8 +123,6 @@ def preprocess_frame(frame, input_size=(224, 224), video_norm_value=None):
     ])'''
     frame = cv2.resize(frame, input_size)
     video_transform = transforms.Compose([
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomRotate(),
                 transforms.ToTensor(video_norm_value)])
     
     return video_transform(frame)
