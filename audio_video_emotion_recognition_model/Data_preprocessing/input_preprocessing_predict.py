@@ -13,27 +13,29 @@ import cv2
 import torch
 from facenet_pytorch import MTCNN
 from utils import transforms
+import random
+
 
 
 class Audio_preprocessing():
     def __init__ (self, video_path):
         self.video_path = video_path
-        self.target_time = 3.6
+        self.target_time = 3
     
     def process(self):
         video = VideoFileClip(self.video_path)
         audio = video.audio
         audio.write_audiofile("prova.wav")
-        audios = librosa.core.load("./prova.wav", sr=22050)
+        audios = librosa.core.load("./prova.wav", sr=22050, res_type="kaiser_fast")
         os.remove("prova.wav")
         y = audios[0]
         sr = audios[1]
         target_length = int(sr * self.target_time)
         if len(y) < target_length:
-            y = np.array(list(y) + [0 for i in range(target_length - len(y))])
+            y = np.pad(y, (0, target_length - len(y)), 'constant')
         else:
-            remain = len(y) - target_length
-            y = y[remain // 2:-(remain - remain // 2)]
+            start = (len(y) - target_length) // 2
+            y = y[start:start + target_length]
 
         return y,sr
     
@@ -130,19 +132,19 @@ def preprocess_frame(frame, input_size=(224, 224), video_norm_value=None):
 def preprocessing_audio_video(data_path, video_norm_value=None, batch_size=1):
     video_npy = Video_preprocessing(data_path).process()
     audio_npy,sr = Audio_preprocessing(data_path).process()
-    
+   
     loader = get_default_video_loader()
     visual_input_batch = loader(video_npy)
     #VIDEO
     video_transform = transforms.Compose([
                 transforms.ToTensor(video_norm_value)])
-    video_transform.randomize_parameters()
     clip = [video_transform(img) for img in visual_input_batch]            
     clip = torch.stack(clip, 0).permute(1, 0, 2, 3)
     #AUDIO
-    mfcc = get_mfccs(audio_npy, sr=sr)          
+    mfcc = get_mfccs(audio_npy, sr=sr)   
     audio_features = mfcc
     audio_var = torch.from_numpy(audio_features).float()
+    
     
     clip = clip.unsqueeze(0).expand(batch_size, -1, -1,-1, -1)
     audio_var = audio_var.unsqueeze(0).expand(batch_size, -1, -1)

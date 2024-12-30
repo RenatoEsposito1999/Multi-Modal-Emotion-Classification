@@ -51,6 +51,7 @@ class MultimodalTransformer(nn.Module):
        
         concat_audio_video =  torch.cat((audio_pooled, video_pooled), dim=-1) 
         
+        
         logits_output = self.classifier(concat_audio_video)
         
         return logits_output

@@ -3,7 +3,7 @@ from Data_preprocessing import input_preprocessing_predict
 #from datasets import synchronized_data
 
 
-video_audio_path="./raw_data_video/angry_wrong.mp4"
+video_audio_path="./raw_data_video/sad_correct.mp4"
 
 
 def predict(opt, model):
@@ -17,12 +17,16 @@ def predict(opt, model):
         
     #Load the weigths on the model
     model.load_state_dict(best_state['state_dict'])
-    
     audio_var, video_var = input_preprocessing_predict.preprocessing_audio_video(video_audio_path,video_norm_value=opt.video_norm_value, batch_size=1)
     
+
     with torch.no_grad():
         output = model(x_audio=audio_var, x_visual=video_var)
+
+    
+
     print("[LOGITS] Output: ", output)
+    
     
     
     

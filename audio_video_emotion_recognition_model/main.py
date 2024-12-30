@@ -12,7 +12,7 @@ from predict import predict
 if __name__ == '__main__':  
     opt = parse_opts()
     
-    if not opt.no_train or not opt.no_val or opt.test:
+    if not opt.no_train or not opt.no_val or not opt.test:
         if not os.path.isfile(opt.annotation_path):
             raise Exception(f"In order to run a training, validation or testing create the file annotation! in {opt.annotation_path}")
         
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         training_validation_processing(opt, model ,criterion_loss)
 
     # Testing Phase       
-    if opt.test:
+    if not opt.test:
         testing_processing(opt, model, criterion_loss)
     
     #Inference  
