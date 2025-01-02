@@ -2,7 +2,7 @@ import os
 import torch
 from torch import nn
 
-from opts import parse_opts
+from opts_audio_video import parse_opts
 from trainining_validation_processing import training_validation_processing
 from testing_processing import testing_processing
 from Multimodal_transformer.MultimodalTransformer import MultimodalTransformer

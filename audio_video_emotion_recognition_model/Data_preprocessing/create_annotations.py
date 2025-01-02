@@ -2,11 +2,9 @@ import os
 import sys
 import random
 
-import opts
-opt = opts.parse_opts()
 
 root = "/home/v.mele/cognitive_robotics/datasets/RAVDESS"
-
+#root = "/projects/data/emotion_rec/mer/RAVDESS"
 
 n_folds=1
 folds = [[[0,1,2,3],[4,5,6,7],[8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]]]
