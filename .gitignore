@@ -180,3 +180,4 @@ multimodal-emotion-recognition-main_refactored/EEGVal.pkl
 /EEG_model/.torcheeg
 /Meta_model/.torcheeg
 /Meta_model/raw_data_video
+.DS_Store
