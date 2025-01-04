@@ -30,7 +30,7 @@ def map_labels(labels):
     return torch.tensor(final_labels,dtype=torch.long)
 
 class EmotionStackingClassifier(nn.Module):
-    def __init__(self, model1, model2, opts, max_iter=1000):
+    def __init__(self, model1, model2, batch_size, max_iter=1000):
         super(EmotionStackingClassifier,self).__init__()
 
         self.model1 = model1
@@ -40,7 +40,7 @@ class EmotionStackingClassifier(nn.Module):
             solver='lbfgs',
             class_weight='balanced'
         )
-        self.opts = opts
+        self.batch_size = batch_size
 
     def organize_by_labels(self, dataloader):
         all_data = []
@@ -62,7 +62,7 @@ class EmotionStackingClassifier(nn.Module):
 
     def synchronize_datasets(self, dataloader1, dataloader2):
         label_data2 = self.organize_by_labels(dataloader2)
-        batch_size = self.opts.batch_size
+        batch_size = self.batch_size
         synced_batches = []
         current_batch = {
             'audio': [], 
