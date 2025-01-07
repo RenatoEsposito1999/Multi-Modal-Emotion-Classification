@@ -70,7 +70,7 @@ conda env create -f envs/environment_linux.yml
 conda activate cognitive_robotics_env
 ```
 ## How to Run the Project
-
+Models must be individually trained before the meta model can be trained.
 1. **Audio-video remotion recognition model:**
    ```bash
    cd audio_video_emotion_recognition_model
@@ -92,9 +92,7 @@ conda activate cognitive_robotics_env
    python main.py
    ```
    If you want to perform just one of those steps add the arguments `--no-train` or `--no-val` or `--test`. For more details see [opts file](/audio_video_emotion_recognition_model/opts_audio_video.py)
-   - Prediction:
-   
-   If you want to try only this model run
+   - Prediction: (For those who want to try the single model)
    ```bash
    python main.py --no-train --no-val --test --predict
    ```
