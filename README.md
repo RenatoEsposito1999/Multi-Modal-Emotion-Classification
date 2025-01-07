@@ -1,6 +1,8 @@
 # Cognitive Robotics Project: Multi-Modal Emotion Classification
 
 ## Project Overview
+METTERE LA FOTO DLL'ARCHITETTURA SPIEGARE IL METAMODEL AGGIUNGERE DA QUALCHE PARTE L'INIDCAZIONE DEI PESI DEI MODELLI PER REPLCARE IL TUTTO. 
+INDICARE CHE C'è ANCHE IL README DI AUDIO VIDEO EMOTION CLASS MODEL 
 This project focuses on developing a multi-modal emotion classification system that enhances human-robot interaction by combining audio, video and EEG inputs. Two deep learning models are integrated to achieve this:
 
 1. **Audio-Video Emotion Classification Model**
@@ -25,7 +27,7 @@ project-root
 └── README.md                    # Project documentation (this file)
 ```
 ## Datasets
-
+LINKARE I DATASET PER IL TRAINIING. 
 ## Dependencies
 The main dependencies are:
 - Python 3.9
