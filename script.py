@@ -1,116 +1,77 @@
 import cv2
-import wave
+import sounddevice as sd
+import numpy as np
 import threading
 import time
- 
+from scipy.io.wavfile import write
+import imageio_ffmpeg as iio
+import subprocess
 
- 
-'''def record_video(output_video_path, record_time):
-    cap = cv2.VideoCapture(0)  # Apre la webcam
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter(output_video_path, fourcc, 20.0, (640, 480))
- 
-    print("Registrazione video in corso...")
-    start_time = time.time()
-    while time.time() - start_time < record_time:
+# Parametri di registrazione
+duration = 10  # Durata in secondi
+fps = 30  # Frame rate del video
+output_video = 'output.mp4'
+temp_video = 'temp_video.avi'
+temp_audio = 'output_audio.wav'
+
+frames = []
+timestamps = []
+audio_recording = []
+
+# Funzione per registrare video
+def record_video():
+    global frames, timestamps
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FPS, fps)
+    start_time = time.perf_counter()
+    
+    while time.perf_counter() - start_time < duration:
         ret, frame = cap.read()
-        if ret:
-            out.write(frame)
-            cv2.imshow('Recording', frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-        else:
+        if not ret:
             break
- 
-    print("Registrazione video terminata.")
-    cap.release()
-    out.release()
-    cv2.destroyAllWindows()
+        frames.append(frame)
+        timestamps.append(time.perf_counter() - start_time)
+        time.sleep(1 / fps)
     
- 
-if __name__ == "__main__":
-    durata_minuti = 0.5 # Inserisci la durata desiderata in minuti
-    durata_secondi = durata_minuti * 60
- 
-    video_path = 'output_video.mp4'
-    audio_path = 'output_audio.wav'
- 
-    
-    video_thread = threading.Thread(target=record_video, args=(video_path, durata_secondi))
- 
-    
-    video_thread.start()
- 
-    
-    video_thread.join()
- 
-    print("Registrazione completata.")'''
-    
-    
-import cv2
-
-import time
- 
-def record_video_with_audio(output_path, record_time):
-
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Usa DirectShow su Windows, lascia solo 0 su macOS/Linux
- 
-    # Controlla se la webcam è stata aperta correttamente
-
-    if not cap.isOpened():
-
-        print("Errore nell'apertura della webcam.")
-
-        return
- 
-    # Imposta il codec e i parametri del video
-
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Usa XVID per .avi, o mp4v per .mp4
-
-    fps = 20.0
-
-    frame_size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-
-    out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
- 
-    print("Registrazione video con audio in corso...")
-
-    start_time = time.time()
-
-    while time.time() - start_time < record_time:
-
-        ret, frame = cap.read()
-
-        if ret:
-
-            out.write(frame)
-
-            cv2.imshow('Recording', frame)
-
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-
-                break
-
-        else:
-
-            break
- 
-    print("Registrazione terminata.")
-
     cap.release()
 
-    out.release()
+# Funzione per registrare audio
+def record_audio():
+    global audio_recording
+    audio_recording = sd.rec(int(duration * 44100), samplerate=44100, channels=2, dtype='int16')
+    sd.wait()
 
-    cv2.destroyAllWindows()
- 
-if __name__ == "__main__":
+# Thread per registrare audio e video simultaneamente
+video_thread = threading.Thread(target=record_video)
+audio_thread = threading.Thread(target=record_audio)
 
-    durata_minuti = 0.1  # Inserisci la durata desiderata in minuti
+video_thread.start()
+audio_thread.start()
 
-    durata_secondi = durata_minuti * 60
+video_thread.join()
+audio_thread.join()
 
-    output_file = 'output_video_with_audio.avi'
- 
-    record_video_with_audio(output_file, durata_secondi)
+# Salva il video
+height, width, _ = frames[0].shape
+out = cv2.VideoWriter(temp_video, cv2.VideoWriter_fourcc(*'XVID'), fps, (width, height))
 
- 
+for frame in frames:
+    out.write(frame)
+
+out.release()
+
+# Salva l'audio
+write(temp_audio, 44100, audio_recording)
+
+# Allinea audio e video con ffmpeg
+subprocess.run([
+    iio.get_ffmpeg_exe(),
+    '-i', temp_video,
+    '-i', temp_audio,
+    '-c:v', 'libx264',
+    '-c:a', 'aac',
+    '-strict', 'experimental',
+    output_video
+], check=True)
+
+print(f"Registrazione completata. File salvato come {output_video}.")

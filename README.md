@@ -15,16 +15,31 @@ This project focuses on developing a multi-modal emotion classification system t
 ```
 project-root
 │
-├── src
-│   ├── audio_video_model        # Implementation of the audio-video model
-│   ├── fbccnn_model             # Implementation of the FBCCNN model
-│   └── data_processing          # Scripts for data preprocessing
-│
-├── data                         # Dataset for audio, video, and EEG inputs
-├── results                      # Reports and experiment outputs
-├── envs                         # Conda environment configuration files
-├── docs                         # Additional documentation
-└── README.md                    # Project documentation (this file)
+├───audio_video_emotion_recognition_model
+│   │   
+│   ├───datasets       
+│   ├───Data_preprocessing        
+│   ├───Image      
+│   ├───Multimodal_transformer 
+│   │   ├───Preprocessing_CNN  
+│   │   │   ├───Preprocessing_utils
+│   │   │   
+│   │   ├───Transformers
+│   │           
+│   ├───results      
+│   ├───utils
+│           
+├───documents      
+├───EEG_model  
+│   ├───datasets   
+│   ├───Images     
+│   ├───results       
+│   ├───utils 
+│     
+├───envs    
+├───Meta_model        
+│   ├───results      
+└───Shared
 ```
 ## Datasets
 LINKARE I DATASET PER IL TRAINIING. 

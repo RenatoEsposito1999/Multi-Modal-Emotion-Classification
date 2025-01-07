@@ -2,20 +2,11 @@ import sys
 sys.path.append('../EEG_model')
 sys.path.append('../audio_video_emotion_recognition_model')
 
-from model_data_load import import_data_model
-from datasets.generate_dataset_RAVDESS import get_training_set_RAVDESS
-from opts_audio_video import parse_opts
-from Multimodal_transformer.MultimodalTransformer import MultimodalTransformer
-from utils import transforms
 from tqdm import tqdm
-from Data_preprocessing import input_preprocessing_predict
-import random
-
 import torch
 import numpy as np
 from torch import nn
 from sklearn.linear_model import LogisticRegression
-from torch.utils.data import DataLoader, Dataset
 from sklearn.metrics import accuracy_score
 from tqdm import tqdm
 
