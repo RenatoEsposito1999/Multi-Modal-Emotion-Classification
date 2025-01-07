@@ -27,12 +27,11 @@ project-root
 ## Datasets
 
 ## Dependencies
-- Python 3.9+
-- PyTorch
-- NumPy
-- OpenCV
-- SciPy
-- Matplotlib
+The main dependencies are:
+- Python 3.9
+- PyTorch 2.6
+- Torcheeg 1.1.3
+All dependencies are specified in the `.yml` files located in the `envs` directory. 
 
 ### Setting up the Environment
 To replicate the development environment, you can use Conda. The `.yml` files required for creating the environment are located in the `envs` directory.
@@ -71,7 +70,13 @@ conda activate cognitive_robotics_env
    ```
 
 ## Results
-The primary results include metrics such as accuracy, precision, recall, and F1-score for each model and the combined system. Detailed results can be found in the `results` directory.
+The following metrics are plotted:
+- **For training:** accuracy and loss.
+- **For validation:** accuracy and loss.
+- **For testing:** accuracy, loss, and confusion matrix.
+
+Detailed plots for the audio-video model can be found in the `audio_video_emotion_recognition_model/Image` directory, while plots for the EEG model are available in the `EEG_model/Images` directory.
+
 
 ## Contributors
 - Esposito Renato (me)
