@@ -28,8 +28,7 @@ project-root
 │   │           
 │   ├───results      
 │   ├───utils
-│           
-├───documents      
+│                 
 ├───EEG_model  
 │   ├───datasets   
 │   ├───Images     
