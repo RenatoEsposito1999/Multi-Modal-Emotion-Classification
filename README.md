@@ -31,6 +31,7 @@ The main dependencies are:
 - Python 3.9
 - PyTorch 2.6
 - Torcheeg 1.1.3
+
 All dependencies are specified in the `.yml` files located in the `envs` directory. 
 
 ### Setting up the Environment
