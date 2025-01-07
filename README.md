@@ -37,13 +37,13 @@ project-root
 ### Setting up the Environment
 To replicate the development environment, you can use Conda. The `.yml` files required for creating the environment are located in the `envs` directory.
 
-To create the environment in in a windows system, run:
+To create the environment in a windows system, run:
 
 ```bash
 conda env create -f envs/environment_windows.yml
 conda activate cognitive_robotics_env
 ```
-To create the environment in in a windows system, run:
+To create the environment in a linux system, run:
 ```bash
 conda env create -f envs/environment_linux.yml
 conda activate cognitive_robotics_env
