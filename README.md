@@ -3,6 +3,8 @@
 ## Project Overview
 METTERE LA FOTO DLL'ARCHITETTURA SPIEGARE IL METAMODEL AGGIUNGERE DA QUALCHE PARTE L'INIDCAZIONE DEI PESI DEI MODELLI PER REPLCARE IL TUTTO. 
 INDICARE CHE C'è ANCHE IL README DI AUDIO VIDEO EMOTION CLASS MODEL 
+Nella sezione del run il progetto, indichiamo che per il trainign bvisogna rifarsi al readme della tizia, e poi spieghiamo come runnare il resto.
+
 This project focuses on developing a multi-modal emotion classification system that enhances human-robot interaction by combining audio, video and EEG inputs. Two deep learning models are integrated to achieve this:
 
 1. **Audio-Video Emotion Classification Model**
