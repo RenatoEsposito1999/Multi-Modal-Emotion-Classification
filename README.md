@@ -1,23 +1,30 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 # Cognitive Robotics Project: Multi-Modal Emotion Classification
 ## Index
-1. [Project Overview](#project-overview)  
-2. [Project Structure](#project-structure)  
-3. [Datasets](#datasets)  
-4. [Dependencies](#dependencies)  
-5. [Development environment](#development-environment)  
-6. [Setting up the Environment](#setting-up-the-environment)  
-7. [How to Run the Project](#how-to-run-the-project)  
+1. [Prefase](#prefase)
+2. [Project Overview](#project-overview)  
+3. [Project Structure](#project-structure)  
+4. [Datasets](#datasets)  
+5. [Dependencies](#dependencies)  
+6. [Development environment](#development-environment)  
+7. [Setting up the Environment](#setting-up-the-environment)  
+8. [How to Run the Project](#how-to-run-the-project)  
    - [Audio-video Emotion Recognition Model](#audio-video-emotion-recognition-model)  
    - [EEG-model](#eeg-model)  
    - [Meta model](#meta-model)  
-8. [Test by Yourself](#test-by-yourself)  
-9. [Results](#results)  
-10. [Contributors](#contributors)  
-11. [References](#references)
+9. [Test by Yourself](#test-by-yourself)  
+10. [Results](#results)  
+11. [Contributors](#contributors)  
+12. [References](#references)
+
+## Prefase
+This is an experimental project for the exam of cognitive robotics of the [University of Naples Parthenope](https://www.uniparthenope.it), whose goal is to create a system in which a humanoid reacts to emotions perceived in relation to a human.
+The perception of emotions occurs thanks to an [EEG helmet](https://www.emotiv.com/products/epoc?srsltid=AfmBOoqXqNjy1TJGp1Xeu0thk4qH4JkpPCJ5Gl9mbcTkrahp0_odNl2o) and audio and video sensors installed in the [Pepper](https://corporate-internal-prod.aldebaran.com/en/pepper) robot.
+This repository refers to the first part of this project which consists in the creation of a model for emotion recognition.
+The second part, which is not on github, consists in defining behaviors on the robot pepper based on emotions detected by the model.
 
 ## Project Overview 
-This project focuses on developing a multi-modal emotion classification system that enhances human-robot interaction by combining audio, video and EEG inputs. Two deep learning models and a meta model are integrated to achieve this:
+This project focuses on developing a multi-modal emotion classification system combining audio, video and EEG inputs. Two deep learning models and a meta model are integrated to achieve this:
 
 ![Alt text](/architecture_overview.jpg)
 
