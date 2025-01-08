@@ -18,7 +18,7 @@
 12. [References](#references)
 
 ## Prefase
-This is an experimental project for the exam of cognitive robotics of the [University of Naples Parthenope](https://www.uniparthenope.it), whose goal is to create a system in which a humanoid reacts to emotions perceived in relation to a human.
+This is an experimental project for the exam of [Cognitive Robotics](https://elearning.uniparthenope.it/course/view.php?id=2127) of the [University of Naples Parthenope](https://www.uniparthenope.it), whose goal is to create a system in which a humanoid reacts to emotions perceived in relation to a human.
 The perception of emotions occurs thanks to an [EEG helmet](https://www.emotiv.com/products/epoc?srsltid=AfmBOoqXqNjy1TJGp1Xeu0thk4qH4JkpPCJ5Gl9mbcTkrahp0_odNl2o) and audio and video sensors installed in the [Pepper](https://corporate-internal-prod.aldebaran.com/en/pepper) robot.
 This repository refers to the first part of this project which consists in the creation of a model for emotion recognition.
 The second part, which is not on github, consists in defining behaviors on the robot pepper based on emotions detected by the model.
