@@ -55,9 +55,10 @@ def predict_testing(opts, stacking_classifier):
     with torch.no_grad():
         eeg_predict = stacking_classifier.model2(sample_data)
         av_predict = stacking_classifier.model1(audio_var, video_var)
-        final_prediction = stacking_classifier.predict(audio_var,video_var,sample_data)
+        final_prediction = stacking_classifier.forward(audio_var,video_var,sample_data)
 
     # Output predictions
     print(f"EEG prediction: {eeg_predict}")
     print(f"AV prediction: {av_predict}")
     print(f"Final prediction: {final_prediction}: {dict_label[final_prediction[0]]}")
+    

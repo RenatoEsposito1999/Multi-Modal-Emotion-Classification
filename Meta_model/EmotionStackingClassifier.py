@@ -166,8 +166,23 @@ class EmotionStackingClassifier(nn.Module):
 
 
         print(f"Best Training Accuracy: {best_val_acc:.4f}")
+        
+    def test(self, dataloader1, dataloader2):
+        print("Synchronizing datasets...")
+        synced_batches = self.synchronize_datasets(dataloader1, dataloader2)
+        
+        print("Preparing meta-features...")
+        meta_features, targets = self.prepare_meta_features(synced_batches)
 
-    def predict(self, audio_data, video_data, eeg_data):
+        best_val_acc = 0
+        
+        final_predictions = (self.meta_model.predict(meta_features))
+        
+        return final_predictions, targets
+        
+
+
+    def forward(self, audio_data, video_data, eeg_data):
         device = next(self.model1.parameters()).device
         
         # Move data to device
