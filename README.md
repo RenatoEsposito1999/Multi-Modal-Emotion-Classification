@@ -1,10 +1,9 @@
 # Cognitive Robotics Project: Multi-Modal Emotion Classification
 
-## Project Overview
-SPIEGARE IL METAMODEL. 
-Nella sezione del run il progetto, indichiamo che per il trainign bvisogna rifarsi al readme della tizia, e poi spieghiamo come runnare il resto.
+## Project Overview 
+This project focuses on developing a multi-modal emotion classification system that enhances human-robot interaction by combining audio, video and EEG inputs. Two deep learning models and a meta model are integrated to achieve this:
 
-This project focuses on developing a multi-modal emotion classification system that enhances human-robot interaction by combining audio, video and EEG inputs. Two deep learning models are integrated to achieve this:
+![Alt text](/architecture_overview.jpg)
 
 1. **Audio-Video Emotion Classification Model**
    Based on the paper "[Learning Audio-Visual Emotional Representations with Hybrid Fusion Strategies](https://arxiv.org/abs/2201.11095#)", this model classifies four emotions using audio and video inputs.
@@ -12,7 +11,8 @@ This project focuses on developing a multi-modal emotion classification system t
 2. **FBCCNN (Feature-Based Convolutional Neural Network)**
    Based on the paper "[Emotion Recognition Based on EEG Using Generative Adversarial Nets and Convolutional Neural Network](https://onlinelibrary.wiley.com/doi/10.1155/2021/2520394)", this model uses EEG data to enhance emotion classification.
 
-![Alt text](/architecture_overview.jpg)
+3. **Meta-model**
+   This model receive in inputs the predictions of the two deep learning models, and through a Logistic Regression function obtain the final prediction, that are: Neutral, Happy, Angry, Sad
 
 ## Project Structure
 ```
@@ -96,32 +96,37 @@ Models must be individually trained before the meta model can be trained.
    ```bash
    python main.py --no-train --no-val --test --predict
    ```
+
 2. **EEG-model:**
-   - Training:
-   - Validation:
-   - Testing:
-   - Prediction:
+   - Training - Validation - Testing:
    ```bash
-   python src/audio_video_model/train.py
+   python main.py --path_eeg [Path of dataset SEED IV]
    ```
+   If you have the folder of cached preprocessed dataset seed IV, you can specify it with argument `--path_cached`
+
+   If you want to perform just one of those steps add the arguments `--no-train` or `--no-val` or `--test`. For more details see [opts file](/EEG_model/opts_eeg.py)
 
 3. **Meta model:**
-   - Training:
-   - Validation:
-   - Testing:
-   - Prediction:
+   - Training - Validation - Testing:
    ```bash
-   python src/fbccnn_model/train.py
+   python main.py --path_eeg [Path of dataset SEED IV]
    ```
+   If you have the folder of cached preprocessed dataset seed IV, you can specify it with argument `--path_cached`
+
+   If you want to perform just one of those steps add the arguments `--no-train` or `--no-val` or `--test`. For more details see [opts file](/Meta_model/opts_meta_model.py)
+
 ## Test by yourself
 If you want to test by yourself you can find the pretrained weights of the models in the `results` directories of the respective models. 
+
 ## Results
 The following metrics are plotted:
 - **For training:** accuracy and loss.
 - **For validation:** accuracy and loss.
 - **For testing:** accuracy, loss, and confusion matrix.
 
-Detailed plots for the audio-video model can be found in the `audio_video_emotion_recognition_model/Image` directory, while plots for the EEG model are available in the `EEG_model/Images` directory.
+Detailed plots for the audio-video model can be found in the `audio_video_emotion_recognition_model/Image` directory, while plots for the EEG model are available in the `EEG_model/Images` directory. 
+
+For the meta-model you can visualize in the `Meta_model/Images` the confusion matrix computed using the test set of audio-video and eeg.
 
 
 ## Contributors
