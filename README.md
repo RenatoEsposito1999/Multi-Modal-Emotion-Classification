@@ -1,3 +1,4 @@
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 # Cognitive Robotics Project: Multi-Modal Emotion Classification
 ## Index
 1. [Project Overview](#project-overview)  
