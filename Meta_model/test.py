@@ -16,8 +16,6 @@ def testing(opts, stacking_classifier):
 
     # Load weights
     weights = torch.load('results/Complete_model.pth')
-    stacking_classifier.model1.load_state_dict(weights['model_av_state_dict'])
-    stacking_classifier.model2.load_state_dict(weights['model_eeg_state_dict'])
     stacking_classifier.meta_model = weights['meta_model_state_dict']
     stacking_classifier.eval()
     

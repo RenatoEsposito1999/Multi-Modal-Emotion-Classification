@@ -49,8 +49,6 @@ def train_meta_classifier(opts, stacking_classifier):
     )
 
     torch.save({
-            'model_av_state_dict': stacking_classifier.model1.state_dict(),
-            'model_eeg_state_dict': stacking_classifier.model2.state_dict(),
             'meta_model_state_dict': stacking_classifier.meta_model
             }, 'results/Complete_model.pth')
 

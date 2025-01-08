@@ -20,8 +20,6 @@ def predict_testing(opts, stacking_classifier):
 
     # Load weights
     weights = torch.load('results/Complete_model.pth')
-    stacking_classifier.model1.load_state_dict(weights['model_av_state_dict'])
-    stacking_classifier.model2.load_state_dict(weights['model_eeg_state_dict'])
     stacking_classifier.meta_model = weights['meta_model_state_dict']
     stacking_classifier.eval()
 
@@ -48,7 +46,6 @@ def predict_testing(opts, stacking_classifier):
     # Select a random EEG sample deterministically
     sample_data = (((labels[1])[0]).unsqueeze(0))
     sample_data = sample_data.to(opts.device)
-    print(next(stacking_classifier.model2.parameters()).is_cuda)
 
     # Perform predictions
     print("Initializing prediction step")
@@ -61,4 +58,5 @@ def predict_testing(opts, stacking_classifier):
     print(f"EEG prediction: {eeg_predict}")
     print(f"AV prediction: {av_predict}")
     print(f"Final prediction: {final_prediction}: {dict_label[final_prediction[0]]}")
+    
     
