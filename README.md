@@ -59,7 +59,8 @@ The development was performed in a Linux CentOS environment on the [machine](htt
 The machine is equipped with 8 computational nodes each equipped with 32 cores and 192 Giga Bytes of RAM for a total of 296 CPU cores. 4 of these 8 computational nodes are each equipped with 4 GPUs for a total of 16 NVIDIA V100 NVLINK devices. Each of these GPUs is equipped with 5120 CUDA cores and 32GB of RAM for a total of 81920 GPU cores. The computational nodes are connected to each other through a high-performance network.
 
 ### Setting up the Environment
-To replicate the development environment, you can use Conda. The `.yml` files required for creating the environment are located in the `envs` directory.
+To replicate the development environment, you can use [Conda](https://anaconda.org/anaconda/conda).
+The `.yml` files required for creating the environment are located in the `envs` directory.
 
 To create the environment in a windows system, run:
 
