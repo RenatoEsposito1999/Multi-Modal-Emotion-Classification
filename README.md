@@ -12,7 +12,7 @@ This project focuses on developing a multi-modal emotion classification system t
    Based on the paper "[Emotion Recognition Based on EEG Using Generative Adversarial Nets and Convolutional Neural Network](https://onlinelibrary.wiley.com/doi/10.1155/2021/2520394)", this model uses EEG data to enhance emotion classification.
 
 3. **Meta-model**
-   This model receive in inputs the predictions of the two deep learning models, and through a Logistic Regression function obtain the final prediction, that are: Neutral, Happy, Angry, Sad
+   This model receive as input the predictions of the two deep learning models and through a logistic regression function obtain the final prediction that are: neutral, happy, angry, sad.
 
 ## Project Structure
 ```
