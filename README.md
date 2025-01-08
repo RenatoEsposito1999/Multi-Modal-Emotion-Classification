@@ -140,13 +140,15 @@ Models must be individually trained before the meta model can be trained.
    If you want to perform just one of those steps add the arguments `--no-train` or `--no-val` or `--test`. For more details see [opts file](/EEG_model/opts_eeg.py)
 
 3. **Meta model:**
-   - Training - Validation - Testing:
+   - Training - Testing:
    ```bash
    python main.py --path_eeg [Path of dataset SEED IV]
    ```
    If you have the folder of cached preprocessed dataset seed IV, you can specify it with argument `--path_cached`
 
-   If you want to perform just one of those steps add the arguments `--no-train` or `--no-val` or `--test`. For more details see [opts file](/Meta_model/opts_meta_model.py)
+   If you want to do only the prediction add the argument `--predict`
+
+   If you want to perform just one of those steps add the arguments `--no-train` or `--test`. For more details see [opts file](/Meta_model/opts_meta_model.py)
 
 ## Test by yourself
 If you want to test by yourself you can find the pretrained weights of the models in the `results` directories of the respective models. 
@@ -170,3 +172,4 @@ For the meta-model you can visualize in the `Meta_model/Images` the confusion ma
 ## References
 1. [Learning Audio-Visual Emotional Representations with Hybrid Fusion Strategies](https://arxiv.org/abs/2201.11095#)
 2. [Emotion Recognition Based on EEG Using Generative Adversarial Nets and Convolutional Neural Network](https://onlinelibrary.wiley.com/doi/10.1155/2021/2520394)
+3. [Github of Learning Audio-Visual Emotional Representations with Hybrid Fusion Strategies](https://github.com/katerynaChmultimodal-emotion-recognition)
