@@ -172,4 +172,4 @@ For the meta-model you can visualize in the `Meta_model/Images` the confusion ma
 ## References
 1. [Learning Audio-Visual Emotional Representations with Hybrid Fusion Strategies](https://arxiv.org/abs/2201.11095#)
 2. [Emotion Recognition Based on EEG Using Generative Adversarial Nets and Convolutional Neural Network](https://onlinelibrary.wiley.com/doi/10.1155/2021/2520394)
-3. [Github of Learning Audio-Visual Emotional Representations with Hybrid Fusion Strategies](https://github.com/katerynaChmultimodal-emotion-recognition)
+3. [Github of Learning Audio-Visual Emotional Representations with Hybrid Fusion Strategies](https://github.com/katerynaCh/multimodal-emotion-recognition)
