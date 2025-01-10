@@ -17,13 +17,7 @@ def predict(opt, model):
         
     #Load the weigths on the model
     model.load_state_dict(best_state['state_dict'])
-    audio_tmp = torch.load("audio.pt")
-    video_tmp = torch.load("video.pt")
     audio_var, video_var = input_preprocessing_predict.preprocessing_audio_video(video_audio_path,video_norm_value=opt.video_norm_value, batch_size=1)
-    torch.save(audio_var, "audio.pt")
-    torch.save(video_var, "video.pt")
-    print(torch.equal(audio_tmp, audio_var))
-    print(torch.equal(video_tmp, video_var))
     
     
 

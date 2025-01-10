@@ -12,6 +12,7 @@ class AudioCNNPool(nn.Module):
         super(AudioCNNPool, self).__init__()
 
         self.input_channels = input_channels
+        
         self.conv1d_0 = conv1d_block_audio(self.input_channels, 64)
         self.conv1d_1 = conv1d_block_audio(64, 128)
         self.conv1d_2 = conv1d_block_audio(128, 256)
@@ -28,7 +29,8 @@ class AudioCNNPool(nn.Module):
         return x
 
 
-    def forward_stage1(self,x):            
+    def forward_stage1(self,x):
+           
         x = self.conv1d_0(x)
         x = self.conv1d_1(x)
         return x
