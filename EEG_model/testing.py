@@ -37,7 +37,7 @@ def test(opt, model, dataloader, loss_fn):
             precision_list.append(precision_1)
             all_predicted_labels.extend((torch.max(pred, 1).indices).cpu().numpy()) 
             all_ground_truth.extend(y.cpu().numpy())
-    plot_data(precision_list,"Images/test_accuracy.png","Test Accuracy", "Accuracy", "Batch")
-    plot_data(test_loss_list,"Images/test_loss.png", "Test Loss", "Loss", "Batch")
-    compute_confusion_matrix(all_ground_truth,all_predicted_labels,'Images/Confusion_matrix.jpeg')
+    plot_data(precision_list,"Images/test_accuracy.pdf","Test Accuracy - EEG Model", "Accuracy", "Batch", "accuracy")
+    plot_data(test_loss_list,"Images/test_loss.pdf", "Test Loss - EEG Model", "Loss", "Batch", "loss")
+    compute_confusion_matrix(all_ground_truth,all_predicted_labels,'Images/Confusion_matrix.pdf', "Confusion Matrix - EEG Model")
 

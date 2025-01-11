@@ -2,27 +2,38 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 
-def plot_data(data_list,file_name, title, printing_y, printing_x):
+def plot_data(data_list,file_name, title, printing_y, printing_x, type):
     plt.figure(figsize=(10,6))
-    plt.plot(data_list, label='Value', marker='o', linestyle='-', color='b')
-
+    legend_properties = {'weight':'bold'}
+    if (type == "loss"):
+        plt.plot(data_list, label='Value loss', marker='.',markersize=8, linestyle='-', linewidth=2, color="red")
+    else:
+        plt.plot(data_list, label='Value accuracy', marker='.',markersize=8, linestyle='-',linewidth=2, color="blue")
+    
     # Adding labels and title
-    plt.xlabel(f"{printing_x}", fontsize=12)
-    plt.ylabel(f'Value {printing_y}', fontsize=12)
-    plt.title(f"{title}", fontsize=14)
-    plt.legend()
-    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tick_params(axis='x', labelsize=14)  # Asse x
+    plt.tick_params(axis='y', labelsize=14) 
+    plt.xlabel(f"{printing_x}", fontsize=17, weight='bold')
+    
+    plt.ylabel(f'Value {printing_y}', fontsize=17, weight='bold')
+    plt.title(f"{title}", fontsize=20,  weight='bold')
+    
+    plt.legend(fontsize=14, prop=legend_properties)
+    plt.grid(color="gray",linestyle="solid")
+    
 
     # Save the plot as a PNG file
-    plt.savefig(file_name, dpi=300, bbox_inches='tight')  # Save with high resolution
+    plt.savefig(file_name, format='pdf', dpi=300, bbox_inches='tight')  # Save with high resolution
     print("Plot saved")
 
-def compute_confusion_matrix(all_true_labels,predicted_labels,path):
+def compute_confusion_matrix(all_true_labels,predicted_labels,path, title):
     cm = confusion_matrix(all_true_labels, predicted_labels)
     plt.figure(figsize=(8, 6))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Neutral', 'Happy', 'Angry', 'Sad'], yticklabels=['Neutral', 'Happy', 'Angry', 'Sad'])
-    plt.xlabel('Predicted Labels')
-    plt.ylabel('True Labels')
-    plt.title('Confusion Matrix')
-    plt.savefig(path, format='jpeg')
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',annot_kws={"fontsize": 14}, xticklabels=['Neutral', 'Happy', 'Angry', 'Sad'], yticklabels=['Neutral', 'Happy', 'Angry', 'Sad'])
+    plt.tick_params(axis='x', labelsize=16)  # Asse x
+    plt.tick_params(axis='y', labelsize=16) 
+    plt.xlabel('Predicted Labels', fontsize=15)
+    plt.ylabel('True Labels', fontsize=15)
+    plt.title(title, fontsize=18, weight='bold')
+    plt.savefig(path, format='pdf', dpi=300)
     plt.close()

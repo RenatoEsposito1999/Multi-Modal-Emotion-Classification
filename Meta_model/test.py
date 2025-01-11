@@ -45,7 +45,7 @@ def testing(opts, stacking_classifier):
     
     final_predictions, targets = stacking_classifier.test(test_loader_av, test_loader_eeg)
     
-    compute_confusion_matrix(targets, final_predictions, "./Images/confusion_matrix.jpeg")
+    compute_confusion_matrix(targets, final_predictions, "./Images/confusion_matrix.pdf", "Confusion Matrix - Meta Model")
     
 
     

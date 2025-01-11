@@ -182,3 +182,5 @@ multimodal-emotion-recognition-main_refactored/EEGVal.pkl
 /Meta_model/raw_data_video
 .DS_Store
 /EEG_model/datasets/.torcheeg
+/EEG_model/script.py
+/audio_video_emotion_recognition_model/script.py

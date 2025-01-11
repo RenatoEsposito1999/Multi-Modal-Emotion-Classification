@@ -66,9 +66,9 @@ def testing_processing(opt, model, criterion_loss):
     with open(os.path.join(opt.result_path, 'test_set_best.txt'), 'a') as f:
             f.write('Prec1: ' + str(prec1)+ '; Loss: ' + str(test_loss))
             
-    plot_data(prec1_avarage_list, "Image/test_accuracy.jpeg", "Test Accuracy", "accuracy", "batch")
-    plot_data(losses_avarage_list, "Image/test_loss.jpeg", "Test Loss", "loss", "batch")
+    plot_data(prec1_avarage_list, "Images/test_accuracy.pdf", "Test Accuracy - Audio-Video Model", "accuracy", "batch", "accuracy")
+    plot_data(losses_avarage_list, "Images/test_loss.pdf", "Test Loss - Audio-Video Model", "loss", "batch", "loss")
     
-    compute_confusion_matrix(all_true_labels, predicted_labels, "Image/confusion_matrix.jpeg")
+    compute_confusion_matrix(all_true_labels, predicted_labels, "Images/confusion_matrix.pdf", "Confusion Matrix - Audio-Video Model")
     
     
