@@ -24,12 +24,7 @@ from plot_data import plot_data, compute_confusion_matrix
         none
 '''
 
-def testing_processing(opt, model, criterion_loss):
-    
-    if not os.path.exists("Image"):
-        os.makedirs("Image")
-        
-        
+def testing_processing(opt, model, criterion_loss):  
     #Prepare the logger in which store the information
     test_logger = Logger(
         os.path.join(opt.result_path, 'test.log'), ['epoch', 'loss', 'prec1'])
