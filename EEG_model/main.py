@@ -9,6 +9,7 @@ from datasets.seediv_dataset import generate_dataset_SEEDIV
 from training_validation import training_validation
 from testing import test
 
+
 if __name__ == '__main__': 
     opt = parse_opts()
     
@@ -26,6 +27,8 @@ if __name__ == '__main__':
     model = FBCCNN(num_classes=4, in_channels=4, grid_size=(9, 9)).to(opt.device)
     
     train_loader, val_loader, test_loader = get_dataloaders(dataset, 42, opt.batch_size)
+    
+  
     
     
     loss_fn = nn.CrossEntropyLoss()

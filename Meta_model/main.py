@@ -20,7 +20,7 @@ def set_random_seed(seed=0):
 
 if __name__ == "__main__":
     opts = parse_opts()
-    set_random_seed(42)
+    set_random_seed(1)
     
     model_av, model_eeg = generate_models(opts)
     
