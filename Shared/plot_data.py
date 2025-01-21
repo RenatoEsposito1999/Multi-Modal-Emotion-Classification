@@ -80,6 +80,7 @@ def plot_data_double_loss(train_acc, val_acc ,file_name, title, printing_y, prin
 
 def compute_confusion_matrix(all_true_labels,predicted_labels,path, title):
     cm = confusion_matrix(all_true_labels, predicted_labels, normalize="true")
+    #cm[0,0] += 0.01
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt=".2f", cmap='Blues',annot_kws={"fontsize": 14}, xticklabels=['Neutral', 'Happy', 'Angry', 'Sad'], yticklabels=['Neutral', 'Happy', 'Angry', 'Sad'])
     plt.tick_params(axis='x', labelsize=16)  # Asse x

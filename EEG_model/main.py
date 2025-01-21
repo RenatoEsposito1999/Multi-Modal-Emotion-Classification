@@ -23,14 +23,13 @@ if __name__ == '__main__':
     set_random_seed(opt.manual_seed)
     
     dataset = generate_dataset_SEEDIV(opt.path_eeg, opt.path_cached)
+
     
     model = FBCCNN(num_classes=4, in_channels=4, grid_size=(9, 9)).to(opt.device)
     
     train_loader, val_loader, test_loader = get_dataloaders(dataset, 42, opt.batch_size)
     
   
-    
-    
     loss_fn = nn.CrossEntropyLoss()
     
     

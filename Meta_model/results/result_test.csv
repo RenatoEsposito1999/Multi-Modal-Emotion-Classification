@@ -1,2 +1,2 @@
-test,len_dataset,accuracy
-Meta-classifier test,480,0.91
+test,len_dataset,accuracy,loss
+Meta-classifier test,480,0.91,0.29

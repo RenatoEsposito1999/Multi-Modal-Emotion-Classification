@@ -177,8 +177,11 @@ class EmotionStackingClassifier(nn.Module):
         best_val_acc = 0
         
         final_predictions = (self.meta_model.predict(meta_features))
+        prob_predictions = self.meta_model.predict_proba(meta_features)
         
-        return final_predictions, targets
+        
+        
+        return prob_predictions, final_predictions, targets
         
 
 

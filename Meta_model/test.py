@@ -9,9 +9,10 @@ from torch.utils.data import DataLoader
 from datasets.generate_dataset_RAVDESS import get_test_set_RAVDESS
 from utils import transforms
 from plot_data import *
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, log_loss
 from torch.utils.data import DataLoader,random_split
 import csv
+
 
 def testing(opts, stacking_classifier):
     eeg_dataset = generate_dataset_SEEDIV(opts.path_eeg, opts.path_cached)
@@ -52,16 +53,22 @@ def testing(opts, stacking_classifier):
         pin_memory=True
     )
     
-    final_predictions, targets = stacking_classifier.test(test_loader_av, test_loader_eeg)
+    prob_predictions, final_predictions, targets = stacking_classifier.test(test_loader_av, test_loader_eeg)
+    
+    loss = log_loss(targets, prob_predictions)
+    
+    print("test loss: ", loss)
     
     output_file = "results/result_test.csv"
     
     compute_confusion_matrix(targets, final_predictions, "./Images/confusion_matrix.pdf", "Confusion Matrix - Meta Model")
     accuracy = accuracy_score(targets, final_predictions, normalize=True)
     
-    data = [{"test": "Meta-classifier test", "len_dataset": len(av_dataset), "accuracy": f"{accuracy:.2f}"}]
+    print("test accuracy: ", accuracy)
+    
+    data = [{"test": "Meta-classifier test", "len_dataset": len(av_dataset), "accuracy": f"{accuracy:.2f}", "loss":f"{loss:.2f}"}]
     with open(output_file, mode='w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=["test", "len_dataset", "accuracy"])
+        writer = csv.DictWriter(file, fieldnames=["test", "len_dataset", "accuracy", "loss"])
     
         # Scrivi l'intestazione (header)
         writer.writeheader()
