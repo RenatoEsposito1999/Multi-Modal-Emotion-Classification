@@ -22,6 +22,7 @@ This is an experimental project for the exam of [Cognitive Robotics](https://ele
 The perception of emotions occurs thanks to an [EEG helmet](https://www.emotiv.com/products/epoc?srsltid=AfmBOoqXqNjy1TJGp1Xeu0thk4qH4JkpPCJ5Gl9mbcTkrahp0_odNl2o) and audio and video sensors installed in the [Pepper](https://corporate-internal-prod.aldebaran.com/en/pepper) robot.
 This repository refers to the first part of this project which consists in the creation of a model for emotion recognition.
 The second part, which is not on github, consists in defining behaviors on the robot pepper based on emotions detected by the model.
+This project is translated into a paper available at this [link](https://ceur-ws.org/Vol-4040/paper1.pdf).
 
 ## Project Overview 
 This project focuses on developing a multi-modal emotion classification system combining audio, video and EEG inputs. Two deep learning models and a meta model are integrated to achieve this:
