@@ -170,7 +170,8 @@ For the meta-model you can visualize in the `Meta_model/Images` the confusion ma
 - [Verrilli Stefano](https://github.com/StefanoVerrilli)
 
 ## References
-1. [Learning Audio-Visual Emotional Representations with Hybrid Fusion Strategies](https://arxiv.org/abs/2201.11095#)
-2. [Emotion Recognition Based on EEG Using Generative Adversarial Nets and Convolutional Neural Network](https://onlinelibrary.wiley.com/doi/10.1155/2021/2520394)
-3. [Github of Learning Audio-Visual Emotional Representations with Hybrid Fusion Strategies](https://github.com/katerynaCh/multimodal-emotion-recognition)
-4. [Esposito, R., Mele, V., Verrilli, S., Minopoli, S., D'Errico, L., De Santis, L., & Staffa, M. (2025). Cascade Multi-Modal Emotion Recognition Leveraging Audio-Video and EEG Signals. In: Proceedings of EMPATH-IA 2025: EMpowering PAtients THrough AI, Multimedia, and Explainable HCI 2025. CEUR Workshop Proceedings, vol. 4040, CEUR-WS.org. ISSN 1613-0073.](https://ceur-ws.org/Vol-4040/paper1.pdf)
+1. [Esposito, R., Mele, V., Verrilli, S., Minopoli, S., D'Errico, L., De Santis, L., & Staffa, M. (2025). Cascade Multi-Modal Emotion Recognition Leveraging Audio-Video and EEG Signals. In: Proceedings of EMPATH-IA 2025: EMpowering PAtients THrough AI, Multimedia, and Explainable HCI 2025. CEUR Workshop Proceedings, vol. 4040, CEUR-WS.org. ISSN 1613-0073.](https://ceur-ws.org/Vol-4040/paper1.pdf)
+2. [Learning Audio-Visual Emotional Representations with Hybrid Fusion Strategies](https://arxiv.org/abs/2201.11095#)
+3. [Emotion Recognition Based on EEG Using Generative Adversarial Nets and Convolutional Neural Network](https://onlinelibrary.wiley.com/doi/10.1155/2021/2520394)
+4. [Github of Learning Audio-Visual Emotional Representations with Hybrid Fusion Strategies](https://github.com/katerynaCh/multimodal-emotion-recognition)
+   
